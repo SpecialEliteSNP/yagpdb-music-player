@@ -1,0 +1,123 @@
+{{/*
+	This command manipulates the soundboard to act like a music player.
+	
+	Recommended trigger: Regex trigger with trigger `\A(-|<@!?756182871580082309>\s*)(play|skip)(\s+|\z)`.
+*/}}
+
+{{ $current := "None" }} 
+{{ $timeA := 0 }}
+{{ $upnext := "None" }}	
+{{ $timeB := 0 }}
+{{ $queue := cslice}}
+{{ $global := 1 }}
+{{ $cc := "soundboard trigger CC #" }}
+
+{{ $channels := cslice
+	757620825691258880
+	}}
+
+{{/* "Songname" Length of Song in secconds */}}
+{{ $songs := dbSet $global "songs" sdict
+    "Born to Live" 180
+    "OT Intro" 30
+    "Legends Are Made" 180
+    "Mona Lisa" 180
+    "Good as Gold" 180
+    "Epic" 180
+    "Good News Song" 60
+    "Bring that Fire" 180
+    "Fire on Up" 180
+    "Hands Up" 180
+    "Ready or Not" 180
+    "Star" "Length" 180
+    "The Best" 180
+    "VIP" 180
+    "Watch Me" 180
+    "What a Day" 180
+    "Back At It" 180
+    "Money Run Low" 180
+    "Power" 180
+    "Move" 180
+    "Keep it 100" 180
+    "Legend" 180
+    "Closer Further" 180
+    "Nothing But Vibe" 180
+    "Get On Up" 180
+    "Its Like Woah" 180
+    "Unstopable" 180
+	) }}
+
+{{/* Set up the -play command */}}
+{{ if eq .Cmd "-play" }}
+{{ $args := parseArgs 0 "**Syntax:** -play songname" (carg "string" "songname" ) }}
+{{ if dbGet 0 "queue" }}
+{{ $queue = $queue.AppendSlice .Value}}{{end}}
+{{ $queue.Append $upnext }}
+{{ dbSet 0 "queue" $queue}}
+{{ if and ($args.IsSet 0) (ne $current "None") }}
+{{ $upnext = $args.Get 0 }}
+{{ $timeB = dbSetExpire $global $upnext "songlength" ($songs.Get $upnext) }}
+{{else}} 
+{{ $current = $args.Get 0 }}
+{{if $songs.Get $current}}
+{{ $timeA = dbSetExpire $global $current "songlength" ($songs.Get $current) }}
+{{end}}
+{{end}}
+
+{{ if dbGet $global "songboard" }}
+{{ with dbGet $global "queue" }}
+{{ $queue = $queue.AppendSlice .Value}}{{end}}
+{{ $queue.Append $upnext }}
+{{ dbSet 0 "queue" $queue}}
+{{ $initial := dbGet $global "songboard" }}
+{{ execCC $cc nil 2 (sdict
+	"Current" (sdict "Name" $current "Length" $timeA )
+	"Upnext" (sdict "Name" $upnext "Length" $timeB )
+	"MsgID" $initial
+	"Songs" $songs
+	"Queue" $queue
+) }}
+{{ dbSet $global "upnext" $upnext }} 
+{{end}}{{end}}
+
+{{/* Setting up the -skip command */}}
+{{ if eq .Cmd "-skip" }}
+{{ $current = $upnext }}
+{{ with dbGet $global "queue" }}
+{{ $queue = dbGet $global "queue" }}
+{{ $upnext = $queue.Index 1 }}
+{{end}}
+{{ exec "sbreset" }}
+{{ execCC $cc nil 2 (sdict
+	"Current" (sdict "Name" $current "Length" $timeA )
+	"Upnext" (sdict "Name" $upnext "Length" $timeB )
+	"MsgID" $initial
+	"Songs" $songs
+	"Queue" $queue
+) }}
+{{end}}
+
+{{else}}
+{{/* Initial Embed */}}
+{{ $embed := sdict 
+	"title" "DPGN Soundboard"
+	"description" "The current queue for the soundboard."
+	"color" 14232643
+	"fields" (cslice
+		(sdict "name" $current "value" $timeA "inline" true)
+		(sdict "name" $upnext "value" $timeB "inline" true)
+	)
+}}
+
+{{ $initial := sendMessageRetID nil (cembed $embed) }}
+{{ dbSet $global "songboard" $initial }}
+{{ sleep 3 }}
+{{ execCC $cc (index $channels (randInt (len $channels))) 2 (sdict
+	"Current" (sdict "Name" $current "Length" $timeA )
+	"Upnext" (sdict "Name" $upnext "Length" $timeB )
+	"Embed" $embed
+	"MsgID" $initial
+	"ChannelID" .Channel.ID
+	"Songs" $songs
+) }}
+{{end}}
