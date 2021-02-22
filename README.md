@@ -1,4 +1,4 @@
-# yagpdb-sb-music
+# Custom Music Player (using YAGPDB Soundboard)
 
 This custom command is built to be used with YAGPDB.
 
