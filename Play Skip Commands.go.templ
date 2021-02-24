@@ -1,7 +1,7 @@
 {{/*
 	This command manipulates the soundboard to act like a music player.
 	
-	Recommended trigger: Regex trigger with trigger `\A(-|<@!?756182871580082309>\s*)(play|skip)(\s+|\z)`.
+	Recommended trigger: Regex trigger with trigger `\A(-|<@!?204255221017214977>\s*)(play|skip|off|list)(\s+|\z)`.
 */}}
 
 {{ $current := "None" }} 
@@ -48,53 +48,55 @@
 	) }}
 
 {{/* Set up the -play command */}}
-{{ if eq .Cmd "-play" }}
-{{ $args := parseArgs 0 "**Syntax:** -play songname" (carg "string" "songname" ) }}
-{{ if dbGet 0 "queue" }}
-{{ $queue = $queue.AppendSlice .Value}}{{end}}
-{{ $queue.Append $upnext }}
-{{ dbSet 0 "queue" $queue}}
-{{ if and ($args.IsSet 0) (ne $current "None") }}
-{{ $upnext = $args.Get 0 }}
-{{ $timeB = dbSetExpire $global $upnext "songlength" ($songs.Get $upnext) }}
-{{else}} 
-{{ $current = $args.Get 0 }}
-{{if $songs.Get $current}}
-{{ $timeA = dbSetExpire $global $current "songlength" ($songs.Get $current) }}
-{{end}}
-{{end}}
-
-{{ if dbGet $global "songboard" }}
-{{ with dbGet $global "queue" }}
-{{ $queue = $queue.AppendSlice .Value}}{{end}}
-{{ $queue.Append $upnext }}
-{{ dbSet 0 "queue" $queue}}
-{{ $initial := dbGet $global "songboard" }}
-{{ execCC $cc nil 2 (sdict
-	"Current" (sdict "Name" $current "Length" $timeA )
-	"Upnext" (sdict "Name" $upnext "Length" $timeB )
-	"MsgID" $initial
-	"Songs" $songs
-	"Queue" $queue
-) }}
-{{ dbSet $global "upnext" $upnext }} 
-{{end}}{{end}}
-
+{{ if inFold .Cmd "play" }}
+    {{$args := parseArgs 1 "usage: `-play songname`" (carg "string" "song name")}}
+    {{$song := $args.Get 0}}
+    {{if $songs.Get $song}}
+        {{if $queue}}
+            {{if not ($queue.Get $song)}}
+                {{$lastTime := newdate 0 0 0 0 0 0}}
+                {{range $k, $v := $queue}}
+                    {{if $v.After $lastTime}}
+                        {{$lastTime = $v}}
+                    {{end}}
+                {{end}}
+                {{$scheduleTime := ($lastTime.Sub currentTime).Seconds|toInt}}
+                {{$queue.Set (lower $song) (currentTime.Add (toDuration (print ($songs.Get $song|toInt) "s")))}}
+                {{scheduleUniqueCC $cc nil $scheduleTime (lower $song) (sdict
+                "songName" $song)}}
+                {{dbSet 0 "queue" $queue}}
+            {{else}}
+            that song is already queued up 
+            {{end}}
+        {{else}}
+            {{execAdmin "sb" $song}}
+        {{end}}
+    {{else}}
+        that is not a valid song
+    {{end}}
 {{/* Setting up the -skip command */}}
-{{ if eq .Cmd "-skip" }}
-{{ $current = $upnext }}
-{{ with dbGet $global "queue" }}
-{{ $queue = dbGet $global "queue" }}
-{{ $upnext = $queue.Index 1 }}
-{{end}}
-{{ exec "sbreset" }}
-{{ execCC $cc nil 2 (sdict
-	"Current" (sdict "Name" $current "Length" $timeA )
-	"Upnext" (sdict "Name" $upnext "Length" $timeB )
-	"MsgID" $initial
-	"Songs" $songs
-	"Queue" $queue
-) }}
+{{else if inFold .Cmd "skip"}}
+{{if $queue}}
+    {{execAdmin "sbreset"}}
+    {{$nextAfter := ""}}
+    {{$isAfter := ""}}
+    {{$num := 0}}
+    {{range $k, $v := $queue}}
+        {{if eq $num 0}}
+            {{$nextAfter = $k}}
+        {{else if eq $num 1}}
+            {{$isAfter = $k}}
+        {{end}}
+        {{$num = add $num 1}}
+    {{end}}
+    {{cancelScheduledUniqueCC $cc $nextAfter}}
+    {{if $isAfter}}
+        {{scheduleUniqueCC $cc nil ($songs.Get $nextAfter|toInt) $isAfter (sdict "songName" $isAfter)}}
+    {{end}}
+    {{$queue.Del $nextAfter}}
+    {{execAdmin "sb" $nextAfter}}
+{{else}}
+    {{execAdmin "sbreset"}}
 {{end}}
 
 {{else}}
