@@ -99,7 +99,6 @@
     {{execAdmin "sbreset"}}
 {{end}}
 
-{{else}}
 {{/* Initial Embed */}}
 {{ $embed := sdict 
 	"title" "DPGN Soundboard"
@@ -122,4 +121,3 @@
 	"ChannelID" .Channel.ID
 	"Songs" $songs
 ) }}
-{{end}}
