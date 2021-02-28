@@ -13,8 +13,7 @@
 {{ $cc := toInt .CCID }}
 {{ $songs := dbGet $global "songs" }}
 {{ $queue := dbGet 0 "queue" }}
-{{ $channels := cslice
-	757620825691258880 }}
+{{ $channels := cslice 757620825691258880 }}
 
 {{ with .ExecData }}
 
@@ -38,12 +37,12 @@
 	{{ if and (eq $timeA 0) (eq $upnext "None") }}
 		{{ $current = "None" }}
 		{{ exec "sbreset" }}
-		{{ $msgs = $msgs.Append (printf "The soundboard is now over." ) }}
+		{{ $msgs = $msgs.Append (printf "The soundboard is now over.") }}
 	{{ end }}
 
 	{{ if eq $current "None" }}
 		{{ if dbGet $global "Queue" }}
-		{{ $upnext = dbGet $global "Queue" }}{{end}}
+		{{ $upnext = dbGet $global "Queue" }}{{ end }}
 		{{ $current = $upnext }}
 		{{ $timeB = $songs.Get $upnext }}
 		{{ $timeA = dbSetExpire $global $current "songlength" $timeB }}
@@ -59,4 +58,4 @@
 
  	{{ editMessage .ChannelID .MsgID (cembed $embed) }}
 	{{ sleep $timeA }}
-{{end}}
+{{ end }}
