@@ -8,16 +8,13 @@
 {{ $timeA := 0 }}
 {{ $upnext := "None" }}	
 {{ $timeB := 0 }}
-{{ $queue := cslice}}
-{{ $global := 1 }}
+{{ $queue := cslice }}
 {{ $cc := "soundboard trigger CC #" }}
 
-{{ $channels := cslice
-	757620825691258880
-	}}
+{{ $channels := cslice 757620825691258880 }}
 
 {{/* "Songname" Length of Song in secconds */}}
-{{ $songs := dbSet $global "songs" sdict
+{{ $songs := dbSet 0 "songs" (sdict
     "Born to Live" "2m56s"
     "OT Intro" "0m30s"
     "Legends Are Made" "2m51s"
@@ -49,55 +46,55 @@
 
 {{/* Set up the -play command */}}
 {{ if inFold .Cmd "play" }}
-    {{$args := parseArgs 1 "usage: `-play songname`" (carg "string" "song name")}}
-    {{$song := $args.Get 0}}
-    {{if $songs.Get $song}}
-        {{if $queue}}
-            {{if not ($queue.Get $song)}}
-                {{$lastTime := newdate 0 0 0 0 0 0}}
-                {{range $k, $v := $queue}}
-                    {{if $v.After $lastTime}}
-                        {{$lastTime = $v}}
-                    {{end}}
-                {{end}}
-                {{$scheduleTime := ($lastTime.Sub currentTime).Seconds|toInt}}
-                {{$queue.Set (lower $song) (currentTime.Add (toDuration (print ($songs.Get $song|toInt) "s")))}}
-                {{scheduleUniqueCC $cc nil $scheduleTime (lower $song) (sdict
+    {{ $args := parseArgs 1 "usage: `-play songname`" (carg "string" "song name") }}
+    {{ $song := $args.Get 0 }}
+    {{ if $songs.Get $song }}
+        {{ if $queue }}
+            {{ if not ($queue.Get $song) }}
+                {{ $lastTime := newdate 0 0 0 0 0 0 }}
+                {{ range $k, $v := $queue }}
+                    {{if $v.After $lastTime }}
+                        {{ $lastTime = $v }}
+                    {{ end }}
+                {{ end }}
+                {{ $scheduleTime := ($lastTime.Sub currentTime).Seconds|toInt }}
+                {{ $queue.Set (lower $song) (currentTime.Add (toDuration (print ($songs.Get $song|toInt) "s"))) }}
+                {{ scheduleUniqueCC $cc nil $scheduleTime (lower $song) (sdict
                 "songName" $song)}}
-                {{dbSet 0 "queue" $queue}}
-            {{else}}
-            that song is already queued up 
-            {{end}}
-        {{else}}
-            {{execAdmin "sb" $song}}
-        {{end}}
-    {{else}}
-        that is not a valid song
-    {{end}}
+                {{ dbSet 0 "queue" $queue }}
+            {{ else }}
+that song is already queued up 
+            {{ end }}
+        {{ else }}
+            {{ execAdmin "sb" $song }}
+        {{ end }}
+    {{ else }}
+that is not a valid song
+    {{ end }}
 {{/* Setting up the -skip command */}}
-{{else if inFold .Cmd "skip"}}
-{{if $queue}}
-    {{execAdmin "sbreset"}}
-    {{$nextAfter := ""}}
-    {{$isAfter := ""}}
-    {{$num := 0}}
-    {{range $k, $v := $queue}}
-        {{if eq $num 0}}
-            {{$nextAfter = $k}}
-        {{else if eq $num 1}}
-            {{$isAfter = $k}}
-        {{end}}
-        {{$num = add $num 1}}
-    {{end}}
-    {{cancelScheduledUniqueCC $cc $nextAfter}}
-    {{if $isAfter}}
-        {{scheduleUniqueCC $cc nil ($songs.Get $nextAfter|toInt) $isAfter (sdict "songName" $isAfter)}}
-    {{end}}
-    {{$queue.Del $nextAfter}}
-    {{execAdmin "sb" $nextAfter}}
-{{else}}
-    {{execAdmin "sbreset"}}
-{{end}}
+{{ else if inFold .Cmd "skip" }}
+{{ if $queue }}
+    {{ execAdmin "sbreset" }}
+    {{ $nextAfter := "" }}
+    {{ $isAfter := "" }}
+    {{ $num := 0 }}
+    {{ range $k, $v := $queue }}
+        {{ if eq $num 0 }}
+            {{ $nextAfter = $k }}
+        {{ else if eq $num 1 }}
+            {{ $isAfter = $k }}
+        {{ end }}
+        {{ $num = add $num 1 }}
+    {{ end }}
+    {{ cancelScheduledUniqueCC $cc $nextAfter }}
+    {{ if $isAfter }}
+        {{ scheduleUniqueCC $cc nil ($songs.Get $nextAfter|toInt) $isAfter (sdict "songName" $isAfter) }}
+    {{ end }}
+    {{ $queue.Del $nextAfter }}
+    {{ execAdmin "sb" $nextAfter }}
+{{ else }}
+    {{ execAdmin "sbreset" }}
+{{ end }}
 
 {{/* Initial Embed */}}
 {{ $embed := sdict 
@@ -107,11 +104,10 @@
 	"fields" (cslice
 		(sdict "name" $current "value" $timeA "inline" true)
 		(sdict "name" $upnext "value" $timeB "inline" true)
-	)
-}}
+    ) }}
 
 {{ $initial := sendMessageRetID nil (cembed $embed) }}
-{{ dbSet $global "songboard" $initial }}
+{{ dbSet 0 "songboard" $initial }}
 {{ sleep 3 }}
 {{ execCC $cc (index $channels (randInt (len $channels))) 2 (sdict
 	"Current" (sdict "Name" $current "Length" $timeA )
@@ -120,4 +116,4 @@
 	"MsgID" $initial
 	"ChannelID" .Channel.ID
 	"Songs" $songs
-) }}
+    ) }}
