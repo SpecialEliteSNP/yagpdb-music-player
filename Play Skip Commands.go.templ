@@ -4,9 +4,9 @@
 	Recommended trigger: Regex trigger with trigger `\A(-|<@!?204255221017214977>\s*)(play|skip|off|list)(\s+|\z)`.
 */}}
 
-{{ $current := "None" }} 
+{{ $current := "None" }}
 {{ $timeA := 0 }}
-{{ $upnext := "None" }}	
+{{ $upnext := "None" }}
 {{ $timeB := 0 }}
 {{ $queue := cslice }}
 {{ $cc := "soundboard trigger CC #" }}
@@ -26,7 +26,7 @@
     "Fire on Up" "3m44s"
     "Hands Up" "3m23s"
     "Ready or Not" "2m42s"
-    "Star" "2m37s" 
+    "Star" "2m37s"
     "The Best" "3m48s"
     "VIP" "4m0s"
     "Watch Me" "2m51s"
@@ -63,7 +63,7 @@
                 "songName" $song)}}
                 {{ dbSet 0 "queue" $queue }}
             {{ else }}
-that song is already queued up 
+that song is already queued up
             {{ end }}
         {{ else }}
             {{ execAdmin "sb" $song }}
@@ -97,7 +97,7 @@ that is not a valid song
 {{ end }}
 
 {{/* Initial Embed */}}
-{{ $embed := sdict 
+{{ $embed := sdict
 	"title" "DPGN Soundboard"
 	"description" "The current queue for the soundboard."
 	"color" 14232643
