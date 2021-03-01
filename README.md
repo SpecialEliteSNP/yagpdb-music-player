@@ -11,10 +11,28 @@ All songs need to be entered manually with their timestamps into this command. A
 
 `-play songname`
 
-`-songs`
+`-shuffle`
 
 `-skip`
 
+`-songlist`
+
 `-off`
 
-`-songlist`
+### Instructions for Setting up
+
+1. Add list of all songs from Soundboard in the following format:
+
+```"Songname1" "03m04s"
+   "Songname2" "02m15s"
+   .
+   .
+   .
+   "SongnameX" "04m30s"
+```
+
+2. Change CC in trigger to new handler CC no.
+
+4. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
+
+6. Enjoy the new Music Player!
