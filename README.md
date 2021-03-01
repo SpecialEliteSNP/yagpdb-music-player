@@ -23,7 +23,8 @@ All songs need to be entered manually with their timestamps into this command. A
 
 1. Add list of all songs from Soundboard in the following format:
 
-```"Songname1" "03m04s"
+```
+   "Songname1" "03m04s"
    "Songname2" "02m15s"
    .
    .
