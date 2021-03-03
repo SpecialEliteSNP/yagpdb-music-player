@@ -15,7 +15,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 `list or l` - Provides list of all songs.
 
-`-play songname or p songname` - Plays a song, or adds it to the queue.
+`play songname or p songname` - Plays a song, or adds it to the queue.
 
 `queue or q` - Shows current queue of songs playing.
 
