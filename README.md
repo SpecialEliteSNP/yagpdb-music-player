@@ -11,7 +11,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 `-music or -m` The leading command for the music system.
 
-### The command flags are as followss: (add these flags after the leading command)
+### The command flags are as follows: (add these flags after the leading command)
 
 `-list or -l` - Provides list of all songs.
 
