@@ -9,7 +9,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 ### The main command:
 
-`-music or -m` The leading command for the music system.
+`-music` or `-m` The leading command for the music system.
 
 ### The command arguments are as follows: (add these flags after the leading command)
 
