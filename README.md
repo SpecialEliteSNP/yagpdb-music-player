@@ -29,7 +29,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 ### Instructions for Setting up
 
-1. Add cc to custom commands.
+1. Add cc to custom commands. Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 
 2. Add songs withing soundboard with following format: `Artist name - Title goes here [223]` 223 = seconds
 
