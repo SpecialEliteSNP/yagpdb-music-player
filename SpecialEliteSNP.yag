@@ -35,10 +35,17 @@
       {{ end }}
     {{ end }}
     {{ if eq $a "l" }}{{/* List command */}}
-🎵 **Available songs:**
-      {{- range $songs }}
-        {{- printf "\n`%s - %s`" .artist .title -}}
-      {{- end }}
+    {{ $display := "" }}
+    {{ $number := 0 }}
+    {{- range $songs }}
+        {{- $number = add $number 1 }}
+        {{- $display = printf "%s\n%d. %s - %s " $display $number .artist .title }}
+    {{ end }}
+    {{ sendMessage nil (cembed
+        "title" "🎵 **Available songs:**"
+        "color" 14232643
+        "description" $display
+    ) }}
     {{ else if eq $a "s" }}
       {{ cancelScheduledUniqueCC .CCID "music" }}
       {{ if $nq }}
