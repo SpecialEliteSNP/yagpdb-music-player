@@ -9,31 +9,26 @@ All songs need to be entered manually with their timestamps into this command. A
 
 ### The commands you can use are as follows:
 
-`-play songname`
+`-list or -l` - Provides list of all songs.
 
-`-shuffle`
+`-play or -p` - Plays a song, or adds it to the queue.
 
-`-skip`
+`-queue or -q` - Shows current queue of songs playing.
 
-`-songlist`
+`-skip or -s` - Skips the current song playing.
 
-`-off`
+`-end or -e` - Stops the music player.
+
+`-clear or -c` - Clears the entire queue.
+
+`-random or -r` - Adds a random song to play.
 
 ### Instructions for Setting up
 
-1. Add list of all songs from Soundboard in the following format:
+1. Add cc to custom commands.
 
-```
-   "Songname1" "03m04s"
-   "Songname2" "02m15s"
-   .
-   .
-   .
-   "SongnameX" "04m30s"
-```
+2. Add songs withing soundboard with following format: `Artist name - Title goes here [223] 223 = seconds`
 
-2. Change CC in trigger to new handler CC no.
+3. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
 
-4. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
-
-6. Enjoy the new Music Player!
+4. Enjoy the new Music Player!
