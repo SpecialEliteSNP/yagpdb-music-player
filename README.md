@@ -17,7 +17,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 `play songname` or `p songname` - Plays a song, or adds it to the queue.
 
-`queue` or `q` - Shows current queue of songs playing.
+`queue songname` or `q songname` - Shows current queue of songs playing, adding a songname after will queue a specified song (optional).
 
 `skip` or `s` - Skips the current song playing.
 
