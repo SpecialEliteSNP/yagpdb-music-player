@@ -7,7 +7,11 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 All songs need to be entered manually with their timestamps into this command. All songs and timestamps will be stored in a queue system for the command to pull from.
 
-### The commands you can use are as follows:
+### The main command:
+
+`-music or -m` The leading command for the music system.
+
+### The command flags are as followss: (add these flags after the leading command)
 
 `-list or -l` - Provides list of all songs.
 
@@ -27,7 +31,7 @@ All songs need to be entered manually with their timestamps into this command. A
 
 1. Add cc to custom commands.
 
-2. Add songs withing soundboard with following format: `Artist name - Title goes here [223] 223 = seconds`
+2. Add songs withing soundboard with following format: `Artist name - Title goes here [223]` 223 = seconds
 
 3. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
 
