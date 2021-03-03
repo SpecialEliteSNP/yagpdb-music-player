@@ -13,19 +13,19 @@ All songs need to be entered manually with their timestamps into this command. A
 
 ### The command arguments are as follows: (add these flags after the leading command)
 
-`list or l` - Provides list of all songs.
+`list` or `l` - Provides list of all songs.
 
-`play songname or p songname` - Plays a song, or adds it to the queue.
+`play songname` or `p songname` - Plays a song, or adds it to the queue.
 
-`queue or q` - Shows current queue of songs playing.
+`queue` or `q` - Shows current queue of songs playing.
 
-`skip or s` - Skips the current song playing.
+`skip` or `s` - Skips the current song playing.
 
-`end or e` - Stops the music player.
+`end` or `e` - Stops the music player.
 
-`clear or c` - Clears the entire queue.
+`clear` or `c` - Clears the entire queue.
 
-`random or r` - Adds a random song to play.
+`random` or `r` - Adds a random song to play.
 
 ### Instructions for Setting up
 
