@@ -82,8 +82,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ $song := index $songs (randInt (sub (len $songs) 1)) }}
       {{ $name := print $song.artist " - " $song.title }}
 ✨ **Random song is...** `{{ $name }}`
-      {{ $q = $q.Append $song }}
-      {{ dbSet 20 "queue" $q }}
+      {{ dbSet 20 "queue" ($q.Append $song) }}
     {{ else if $args.IsSet 1 }}{{/* If a song was provided */}}
       {{ $song := sdict }}
 	    {{ range $songs }}
