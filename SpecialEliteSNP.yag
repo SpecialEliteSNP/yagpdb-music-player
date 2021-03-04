@@ -8,10 +8,9 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ $i := 0 }}
 {{ range $q }}{{ if ne $i 0 }}{{ $nq = $nq.Append . }}{{ end }}{{ $i = add $i 1 }}{{ end }}{{/* Removes the first item from the queue */}}
 {{ $i = 0 }}
-{{ $user := .User.ID }}
 
 {{$yagInVC := false}}{{range .Guild.VoiceStates}}{{if eq .UserID 204255221017214977}}{{$yagInVC = true}}{{end}}{{end}}
-{{$userInVC := false}}{{range .Guild.VoiceStates}}{{if eq .UserID $user }}{{$userInVC = true}}{{end}}{{end}}
+{{$userInVC := false}}{{range .Guild.VoiceStates}}{{if eq .UserID $.User.ID }}{{$userInVC = true}}{{end}}{{end}}
 
 {{ if .ExecData }}
   {{ if and ($nq) $yagInVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
@@ -87,7 +86,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ dbSet 20 "queue" $q }}
     {{ else if $args.IsSet 1 }}{{/* If a song was provided */}}
       {{ $song := sdict }}
-	  {{ range $songs }}
+	    {{ range $songs }}
         {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
           {{ $song = sdict . }}
         {{ end }}
@@ -95,23 +94,18 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ if $song }}{{/* If a song was found */}}
         {{ $name := print $song.artist " - " $song.title }}
         {{ if eq $a "p" }}{{/* Play command with song */}}
-          {{ if $q }}
+          {{ if $yagInVC }}
 🔮 **Next up** `{{ $name }}`
-			      {{ $q = (cslice 0 $song).AppendSlice $q }}
-			      {{ dbSet 20 "queue" $q }}
-		      {{ else if $yagInVC }} {{/* Queue command with song */}}
-📃 **Queued** `{{ $name }}`
-		      	{{ $q = (cslice 0 $song) }}
-			      {{ dbSet 20 "queue" $q }}
-			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-		      {{ else if $userInVC }}{{/* If the user is in a voice channel */}}
-			      {{ $sb := exec "sb" (print $name " [" $song.length "]") }}
-			      {{ dbSet 20 "queue" $q }}
-			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-🎶 **Now playing** `{{ $name }}`
+            {{ dbSet 20 "queue" ((cslice (index $q 0) $song).AppendSlice $nq) }}
+          {{ else if $userInVC }}
+            {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
+            {{ execCC .CCID nil 0 1 }}
 		      {{ else }}
 ❌ **You're not in a voice channel!**
 		      {{ end }}
+        {{ else }}{{/* Queue command with song */}}
+📃 **Queued** `{{ $name }}`
+          {{ dbSet 20 "queue" ($q.Append $song) }}
         {{ end }}
       {{ else }}{{/* Provided song was not found */}}
 ❌ **Song `{{ $args.Get 1 }}` not found**, type __{{ $prefix }}music list__ to see a list of available songs.
