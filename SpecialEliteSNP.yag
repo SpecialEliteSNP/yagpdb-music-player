@@ -97,20 +97,20 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
         {{ if eq $a "p" }}{{/* Play command with song */}}
           {{ if $q }}
 🔮 **Next up** `{{ $name }}`
-			{{ $q = (cslice 0 $song).AppendSlice $q }}
-			{{ dbSet 20 "queue" $q }}
-		  {{ else if $yagInVC }} {{/* Queue command with song */}}
+			      {{ $q = (cslice 0 $song).AppendSlice $q }}
+			      {{ dbSet 20 "queue" $q }}
+		      {{ else if $yagInVC }} {{/* Queue command with song */}}
 📃 **Queued** `{{ $name }}`
-			{{ $q = (cslice 0 $song) }}
-			{{ dbSet 20 "queue" $q }}
-			{{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
-		  {{ else if $userInVC }}{{/* If the user is in a voice channel */}}
-			{{ $sb := exec "sb" (print $name " [" $song.length "]") }}
-			{{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+		      	{{ $q = (cslice 0 $song) }}
+			      {{ dbSet 20 "queue" $q }}
+			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+		      {{ else if $userInVC }}{{/* If the user is in a voice channel */}}
+			      {{ $sb := exec "sb" (print $name " [" $song.length "]") }}
+			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
 🎶 **Now playing** `{{ $name }}`
-		  {{ else }}
+		      {{ else }}
 ❌ **You're not in a voice channel!**
-		  {{ end }}
+		      {{ end }}
         {{ end }}
       {{ else }}{{/* Provided song was not found */}}
 ❌ **Song `{{ $args.Get 1 }}` not found**, type __{{ $prefix }}music list__ to see a list of available songs.
