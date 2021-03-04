@@ -21,7 +21,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 🛑 **Music stopped**
     {{ else }}
 🎶 **Now playing** `{{ $name }}`
-      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
     {{ end }}
   {{ else }}{{/* Empty queue */}}
 🏁 **The queue has ended**
@@ -63,7 +63,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
         {{ $sil := exec "sb" (print $name " [" $song.length "]") }}
 ⏭ **Skipped!**
 🎶 **Now playing** `{{ $name }}`
-        {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+        {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
         {{ dbSet 20 "queue" $nq }}
       {{ else }}
 🤷‍♂️ **No more songs in the queue**
@@ -103,11 +103,11 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 📃 **Queued** `{{ $name }}`
 		      	{{ $q = (cslice 0 $song) }}
 			      {{ dbSet 20 "queue" $q }}
-			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
 		      {{ else if $userInVC }}{{/* If the user is in a voice channel */}}
 			      {{ $sb := exec "sb" (print $name " [" $song.length "]") }}
 			      {{ dbSet 20 "queue" $q }}
-			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
 🎶 **Now playing** `{{ $name }}`
 		      {{ else }}
 ❌ **You're not in a voice channel!**
@@ -133,7 +133,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
         {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]")) }}
 ❌ **You're not in a voice channel!**
         {{ else }}{{/* If the user is in a voice channel */}}
-          {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
+          {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
 🎶 **Now playing** `{{ $name }}`
         {{ end }}
       {{ else }}{{/* If the queue is empty */}}
