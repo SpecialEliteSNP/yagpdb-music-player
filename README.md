@@ -10,7 +10,7 @@ All songs need to be entered manually with their timestamps into this command. A
 `-music` The leading command for the music system.
 
 ## The command actions are as follows:
-These are to be added after the main command and can be used as a single letter, just like `-music` is the same as `-m`.
+**These are to be added after the main command and can be used as a single letter, just like `-music` is the same as `-m`.**
 
 `list` - Provides list of all songs.  
 `play <songname>` - Plays a song, or adds it to the queue.  
