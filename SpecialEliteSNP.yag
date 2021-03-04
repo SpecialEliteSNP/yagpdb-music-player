@@ -106,6 +106,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
 		      {{ else if $userInVC }}{{/* If the user is in a voice channel */}}
 			      {{ $sb := exec "sb" (print $name " [" $song.length "]") }}
+			      {{ dbSet 20 "queue" $q }}
 			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song_length) 1000000000) "music" 1 }}
 🎶 **Now playing** `{{ $name }}`
 		      {{ else }}
