@@ -138,3 +138,22 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ end }}
   {{ end }}
 {{ end }}
+
+
+{{/* {{ define "announcement" }}
+  {{ $display := "" }}
+  {{- range $i, $_ := index . 1 }}
+    {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
+  {{ end }}
+  {{ sendMessage nil (cembed "title" (index . 0) "description" $display "thumbnail" (sdict "url" "https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png")) }}
+{{ end }}
+
+$action is either "Music Available:" or something like "Queued" or "Now Playing"
+{{ $action := "" }}
+{{ $songs := "" }}
+{{ $song := "" }}
+{{ if eq $action "Music Available:" }}
+  {{ template "announcement" (cslice $action $songs) }}
+{{ else }}
+  {{ template "announcement" (cslice $action (cslice $song)) }}
+{{ end }} */}}
