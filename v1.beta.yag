@@ -9,11 +9,17 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ range $q }}{{ if ne $i 0 }}{{ $nq = $nq.Append . }}{{ end }}{{ $i = add $i 1 }}{{ end }}{{/* Removes the first item from the queue */}}
 {{ $i = 0 }}
 
-{{$yagInVC := false}}{{range .Guild.VoiceStates}}{{if eq .UserID 204255221017214977}}{{$yagInVC = true}}{{end}}{{end}}
-{{$userInVC := false}}{{range .Guild.VoiceStates}}{{if eq .UserID $.User.ID }}{{$userInVC = true}}{{end}}{{end}}
+{{ $yagVC := 0 }}{{ $userVC := 0 }}
+{{ range .Guild.VoiceStates }}
+  {{ if eq .UserID 204255221017214977 }}
+    {{ $yagVC = .ChannelID }}
+  {{ else if eq .UserID $.User.ID }}
+    {{ $userVC = .ChannelID }}
+  {{ end }}
+{{ end }}
 
 {{ if .ExecData }}
-  {{ if and ($nq) $yagInVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
+  {{ if and $nq $yagInVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
     {{ $song := index $nq 0 }}
     {{ $name := print $song.artist " - " $song.title }}
     {{ if reFind `\AY` (execAdmin "sb" (print $name " [" $song.length "]")) }}
@@ -42,17 +48,14 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ end }}
     {{ end }}
     {{ if eq $a "l" }}{{/* List command */}}
-    {{ $display := "" }}
-    {{ $number := 0 }}
-    {{- range $songs }}
-        {{- $number = add $number 1 }}
-        {{- $display = printf "%s\n%d. %s - %s " $display $number .artist .title }}
-    {{ end }}
-    {{ sendMessage nil (cembed
+      {{ $display := "" }}
+      {{- range $i, $_ := $songs }}
+        {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
+      {{ end }}
+      {{ sendMessage nil (cembed
         "title" "🎵 **Available songs:**"
         "color" 14232643
-        "description" $display
-    ) }}
+        "description" $display) }}
     {{ else if eq $a "s" }} {{/* Skip command */}}
       {{ cancelScheduledUniqueCC .CCID "music" }}
       {{ if $nq }}
