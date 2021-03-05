@@ -19,7 +19,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ end }}
 
 {{ if .ExecData }}
-  {{ if and $nq $yagInVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
+  {{ if and $nq $yagVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
     {{ $song := index $nq 0 }}
     {{ $name := print $song.artist " - " $song.title }}
     {{ if reFind `\AY` (execAdmin "sb" (print $name " [" $song.length "]")) }}
@@ -96,10 +96,10 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ if $song }}{{/* If a song was found */}}
         {{ $name := print $song.artist " - " $song.title }}
         {{ if eq $a "p" }}{{/* Play command with song */}}
-          {{ if $yagInVC }}
+          {{ if $yagVC }}
 🔮 **Next up** `{{ $name }}`
             {{ dbSet 20 "queue" ((cslice (index $q 0) $song).AppendSlice $nq) }}
-          {{ else if $userInVC }}
+          {{ else if $userVC }}
             {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
             {{ execCC .CCID nil 0 1 }}
 		      {{ else }}
