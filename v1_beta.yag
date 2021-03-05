@@ -34,7 +34,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
   {{ dbSet 20 "queue" $nq }}
 {{ else }}
   {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
-  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To queue a song*\n%sm(usic) s(top) - *To stop the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix }}
+  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To queue a song*\n%sm(usic) e(nd) - *To end the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix }}
   {{ $args := parseArgs 1 $syntax (carg "string" "action") (carg "string" "song") }}
   {{ $a := reFind `.` ($args.Get 0) | lower }}
   {{ if not (eq $a "l" "p" "q" "s" "e" "c" "r") }}
