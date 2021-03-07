@@ -105,9 +105,9 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ $song := sdict }}
       {{ $len := 0 }}
 	    {{ range $songs }}
-        {{ $found := reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
-        {{ if and $found (or (eq $len 0) (lt (len $found) $len)) }}
-          {{ $len = len $found }}
+        {{ $found := len (reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title) }}
+        {{ if and $found (or (eq $len 0) (lt $found $len)) }}
+          {{ $len = $found }}
           {{ $song = sdict . }}
         {{ end }}
       {{ end }}
