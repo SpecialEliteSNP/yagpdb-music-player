@@ -103,11 +103,19 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ dbSet 20 "queue" ($q.Append $song) }}
     {{ else if $args.IsSet 1 }}{{/* If a song was provided */}}
       {{ $song := sdict }}
+      {{ $len := 0 }}
 	    {{ range $songs }}
-        {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
+        {{ $found := reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
+        {{ if and $found (or (eq $len 0) (lt (len $found) $len)) }}
+          {{ $len = len $found }}
           {{ $song = sdict . }}
         {{ end }}
       {{ end }}
+      {{/* {{ range $songs }}
+        {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
+          {{ $song = sdict . }}
+        {{ end }}
+      {{ end }} */}}
       {{ if $song }}{{/* If a song was found */}}
         {{ $name := print $song.artist " - " $song.title }}
         {{ if eq $a "p" }}{{/* Play command with song */}}
