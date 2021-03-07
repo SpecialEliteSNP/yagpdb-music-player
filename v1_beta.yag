@@ -11,34 +11,38 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
 
 {{ define "announce" }}
-  {{ $embed := sdict "thumbnail" (sdict "url" "https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png") }}
+  {{/* https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png */}}
+  {{ $embed := sdict "color" 0x32BAFB "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") }}
   {{ $title := "🎶 Now playing" }}
   {{ $display := "" }}
   {{ if eq (index . 0) 0 }}
     {{ $display = print (index . 1).artist " - " (index . 1).title "\n\nLength:" (index . 1).length }}
   {{ else }}
-    {{- range $i, $_ := index . 1 }}
-      {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
-    {{ end }}
     {{ if eq (index . 0) 1 }}
       {{ $title = "📃 Queue" }}
     {{ else }}
       {{ $title = "🎵 Available songs" }}
+    {{ end }}
+    {{ $embed.Set "title" $title }}
+    {{- range $i, $e := index . 1 }}
+      {{- $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $i 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
+    {{ else }}
+      {{ $display = "❌ **Queue is empty!**" }}
+    {{ end }}
+    {{ $embed.Set "description" $display }}
+    {{ sendMessage nil (cembed $embed) }}
   {{ end }}
-  {{ $embed.Set "title" $title }}
-  {{ $embed.Set "description" $display }}
-  {{ sendMessage nil (cembed $embed) }}
 {{ end }}
 
 {{/* $action is either "Music Available:" or something like "Queued" or "Now Playing" */}}
-{{ $action := "" }}
+{{/* {{ $action := 0 }}
 {{ $songs := "" }}
 {{ $song := "" }}
-{{ if eq $action "Music Available:" }}
-  {{ template "announcement" (cslice $action $songs) }}
+{{ if eq $action 1 }}
+  {{ template "announce" (cslice $action $songs) }}
 {{ else }}
-  {{ template "announcement" (cslice $action (cslice $song)) }}
-{{ end }}
+  {{ template "announce" (cslice $action (cslice $song)) }}
+{{ end }} */}}
 
 {{/* Automation */}}
 {{ if .ExecData }}
@@ -56,6 +60,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 🏁 **The queue has ended**
   {{ end }}
   {{ dbSet 20 "queue" $nq }}
+  
 {{/* Regular commands */}}
 {{ else }}
   {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
@@ -69,18 +74,19 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ $songs := cslice }}
     {{ range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36)) }}
       {{ with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0) }}
-        {{ $songs = $songs.Append (sdict "artist" (index . 0 1) "length" (toInt (index . 0 3)) "title" (index . 0 2)) }}
+        {{ $songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2)) }}
       {{ end }}
     {{ end }}
     {{ if eq $a "l" }}{{/* List command */}}
-      {{ $display := "" }}
-      {{- range $i, $_ := $songs }}
-        {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
-      {{ end }}
-      {{ sendMessage nil (cembed
+      {{/* {{ $display := "" }}
+      {{- range $i, $e := $songs }}
+        {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $e.artist $e.title }}
+      {{ end }} */}}
+      {{ template "announce" (cslice 2 $songs) }}
+      {{/* {{ sendMessage nil (cembed
         "title" "🎵 **Available songs:**"
         "color" 14232643
-        "description" $display) }}
+        "description" $display) }} */}}
     {{ else if eq $a "s" }} {{/* Skip command */}}
       {{ cancelScheduledUniqueCC .CCID "music" }}
       {{ if $nq }}
@@ -138,14 +144,15 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 ❌ **Song `{{ $args.Get 1 }}` not found**, type __{{ $prefix }}music list__ to see a list of available songs.
       {{ end }}
     {{ else if eq $a "q" }}{{/* Queue command without song */}}
-      {{ if $q }}{{/* If there is a queue */}}
-📃 **Queue:**
+      {{/* {{ if $q }} If there is a queue */}}
+      {{ template "announce" (cslice 1 $q) }}
+{{/* 📃 **Queue:**
         {{- range $i, $_ := $q }}
           {{- printf "\n%d.\t`%s - %s`" (add $i 1) $_.artist $_.title -}}
         {{ end }}
-      {{ else }}{{/* If the queue is empty */}}
+      {{ else }} If the queue is empty 
 ❌ **Queue is empty!**
-      {{ end }}
+      {{ end }} */}}
     {{ else }}{{/* Play command without song */}}
       {{ if $q }}{{/* If there is a queue */}}
         {{ $song := index $q 0 }}
