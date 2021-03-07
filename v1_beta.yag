@@ -7,7 +7,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ $nq := cslice }}{{ range $i, $_ := $q }}{{ if gt $i 0 }}{{ $nq = $nq.Append $_ }}{{ end }}{{ end }}
 
 {{/* Checks if User/YAG is in VC, if so, saves channel ID */}}
-{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 204255221017214977 }}
+{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 756182871580082309 }}
 {{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
 
 {{ define "announce" }}
@@ -64,7 +64,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{/* Regular commands */}}
 {{ else }}
   {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
-  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To queue a song*\n%sm(usic) s(top) - *To stop the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix }}
+  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To skip a song*\n%sm(usic) s(kip) - *To skip the current song*\n%sm(usic) e(nd) - *To end the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix $prefix }}
   {{ $args := parseArgs 1 $syntax (carg "string" "action") (carg "string" "song") }}
   {{ $a := reFind `.` ($args.Get 0) | lower }}
   {{ if not (eq $a "l" "p" "q" "s" "e" "c" "r") }}
@@ -127,15 +127,20 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ if $song }}{{/* If a song was found */}}
         {{ $name := print $song.artist " - " $song.title }}
         {{ if eq $a "p" }}{{/* Play command with song */}}
-          {{ if $yagVC }}
+          {{ if and $yagVC (not $q) }}
 🔮 **Next up** `{{ $name }}`
-            {{ dbSet 20 "queue" ((cslice (index $q 0) $song).AppendSlice $nq) }}
-          {{ else if $userVC }}
-            {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
-            {{ execCC .CCID nil 0 1 }}
-		      {{ else }}
+            {{ dbSet 20 "queue" ((cslice ($song)).AppendSlice $nq) }}
+          {{ else if and $userVC (not $yagVC) }}
+               {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]" )) }}
 ❌ **You're not in a voice channel!**
-		      {{ end }}
+               {{ else }}
+🎶 **Now playing** `{{ $name }}`
+               {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+			         {{ end }}
+        {{ else if and $yagVC $q }}{{/* Queue command with song */}}
+📃 **Queued** `{{ $name }}`
+          {{ dbSet 20 "queue" ($q.Append $song) }}
+		{{ end }}
         {{ else }}{{/* Queue command with song */}}
 📃 **Queued** `{{ $name }}`
           {{ dbSet 20 "queue" ($q.Append $song) }}
