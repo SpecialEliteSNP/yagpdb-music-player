@@ -2,22 +2,45 @@
 Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 */}}
 
-{{ $q := cslice }}{{ with (dbGet 20 "queue").Value }}
-{{ $q = $q.AppendSlice . }}{{ end }}
-{{ $nq := cslice }}
-{{ $i := 0 }}
-{{ range $q }}{{ if ne $i 0 }}{{ $nq = $nq.Append . }}{{ end }}{{ $i = add $i 1 }}{{ end }}{{/* Removes the first item from the queue */}}
-{{ $i = 0 }}
+{{/* Saves the whole queue as $q, then removes the first item and saves the rest to $nq */}}
+{{ $q := cslice }}{{ with (dbGet 20 "queue").Value }}{{ $q = $q.AppendSlice . }}{{ end }}
+{{ $nq := cslice }}{{ range $i, $_ := $q }}{{ if gt $i 0 }}{{ $nq = $nq.Append $_ }}{{ end }}{{ end }}
 
-{{ $yagVC := 0 }}{{ $userVC := 0 }}
-{{ range .Guild.VoiceStates }}
-  {{ if eq .UserID 204255221017214977 }}
-    {{ $yagVC = .ChannelID }}
-  {{ else if eq .UserID $.User.ID }}
-    {{ $userVC = .ChannelID }}
+{{/* Checks if User/YAG is in VC, if so, saves channel ID */}}
+{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 204255221017214977 }}
+{{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
+
+{{ define "announce" }}
+  {{ $embed := sdict "thumbnail" (sdict "url" "https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png") }}
+  {{ $title := "🎶 Now playing" }}
+  {{ $display := "" }}
+  {{ if eq (index . 0) 0 }}
+    {{ $display = print (index . 1).artist " - " (index . 1).title "\n\nLength:" (index . 1).length }}
+  {{ else }}
+    {{- range $i, $_ := index . 1 }}
+      {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
+    {{ end }}
+    {{ if eq (index . 0) 1 }}
+      {{ $title = "📃 Queue" }}
+    {{ else }}
+      {{ $title = "🎵 Available songs" }}
   {{ end }}
+  {{ $embed.Set "title" $title }}
+  {{ $embed.Set "description" $display }}
+  {{ sendMessage nil (cembed $embed) }}
 {{ end }}
 
+{{/* $action is either "Music Available:" or something like "Queued" or "Now Playing" */}}
+{{ $action := "" }}
+{{ $songs := "" }}
+{{ $song := "" }}
+{{ if eq $action "Music Available:" }}
+  {{ template "announcement" (cslice $action $songs) }}
+{{ else }}
+  {{ template "announcement" (cslice $action (cslice $song)) }}
+{{ end }}
+
+{{/* Automation */}}
 {{ if .ExecData }}
   {{ if and $nq $yagVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
     {{ $song := index $nq 0 }}
@@ -25,16 +48,18 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ if reFind `\AY` (execAdmin "sb" (print $name " [" $song.length "]")) }}
 🛑 **Music stopped**
     {{ else }}
-🎶 **Now playing** `{{ $name }}`
+      {{ template "announce" (cslice 0 $song) }}
+{{/* 🎶 **Now playing** `{{ $name }}` */}}
       {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
     {{ end }}
   {{ else }}{{/* Empty queue */}}
 🏁 **The queue has ended**
   {{ end }}
   {{ dbSet 20 "queue" $nq }}
+{{/* Regular commands */}}
 {{ else }}
   {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
-  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To skip a song*\n%sm(usic) s(kip) - *To skip the current song*\n%sm(usic) e(nd) - *To end the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix $prefix }}
+  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To queue a song*\n%sm(usic) s(top) - *To stop the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix }}
   {{ $args := parseArgs 1 $syntax (carg "string" "action") (carg "string" "song") }}
   {{ $a := reFind `.` ($args.Get 0) | lower }}
   {{ if not (eq $a "l" "p" "q" "s" "e" "c" "r") }}
@@ -115,9 +140,8 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ else if eq $a "q" }}{{/* Queue command without song */}}
       {{ if $q }}{{/* If there is a queue */}}
 📃 **Queue:**
-        {{- range $q }}
-          {{- $i = add $i 1 }}
-          {{- printf "\n%d.\t`%s - %s`" $i .artist .title -}}
+        {{- range $i, $_ := $q }}
+          {{- printf "\n%d.\t`%s - %s`" (add $i 1) $_.artist $_.title -}}
         {{ end }}
       {{ else }}{{/* If the queue is empty */}}
 ❌ **Queue is empty!**
@@ -138,22 +162,3 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ end }}
   {{ end }}
 {{ end }}
-
-
-{{/* {{ define "announcement" }}
-  {{ $display := "" }}
-  {{- range $i, $_ := index . 1 }}
-    {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $_.artist $_.title }}
-  {{ end }}
-  {{ sendMessage nil (cembed "title" (index . 0) "description" $display "thumbnail" (sdict "url" "https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png")) }}
-{{ end }}
-
-$action is either "Music Available:" or something like "Queued" or "Now Playing"
-{{ $action := "" }}
-{{ $songs := "" }}
-{{ $song := "" }}
-{{ if eq $action "Music Available:" }}
-  {{ template "announcement" (cslice $action $songs) }}
-{{ else }}
-  {{ template "announcement" (cslice $action (cslice $song)) }}
-{{ end }} */}}
