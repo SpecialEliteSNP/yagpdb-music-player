@@ -111,11 +111,6 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
           {{ $song = sdict . }}
         {{ end }}
       {{ end }}
-      {{/* {{ range $songs }}
-        {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` ($args.Get 1) `\$0`) "`"|joinStr `\x60`))) .title }}
-          {{ $song = sdict . }}
-        {{ end }}
-      {{ end }} */}}
       {{ if $song }}{{/* If a song was found */}}
         {{ $name := print $song.artist " - " $song.title }}
         {{ if eq $a "p" }}{{/* Play command with song */}}
