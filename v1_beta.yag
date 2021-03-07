@@ -4,10 +4,10 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 
 {{/* Saves the whole queue as $q, then removes the first item and saves the rest to $nq */}}
 {{ $q := cslice }}{{ with (dbGet 20 "queue").Value }}{{ $q = $q.AppendSlice . }}{{ end }}
-{{ $nq := cslice }}{{ range $i, $_ := $q }}{{ if gt $i 0 }}{{ $nq = $nq.Append $_ }}{{ end }}{{ end }}
+{{ $nq := cslice }}{{ range $i, $e := $q }}{{ if gt $i 0 }}{{ $nq = $nq.Append $e }}{{ end }}{{ end }}
 
 {{/* Checks if User/YAG is in VC, if so, saves channel ID */}}
-{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 756182871580082309 }}
+{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 204255221017214977 }}
 {{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
 
 {{ define "announce" }}
@@ -34,16 +34,6 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
   {{ end }}
 {{ end }}
 
-{{/* $action is either "Music Available:" or something like "Queued" or "Now Playing" */}}
-{{/* {{ $action := 0 }}
-{{ $songs := "" }}
-{{ $song := "" }}
-{{ if eq $action 1 }}
-  {{ template "announce" (cslice $action $songs) }}
-{{ else }}
-  {{ template "announce" (cslice $action (cslice $song)) }}
-{{ end }} */}}
-
 {{/* Automation */}}
 {{ if .ExecData }}
   {{ if and $nq $yagVC }}{{/* If there are still songs in the queue, and bot is still in VC */}}
@@ -64,7 +54,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{/* Regular commands */}}
 {{ else }}
   {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
-  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To skip a song*\n%sm(usic) s(kip) - *To skip the current song*\n%sm(usic) e(nd) - *To end the music*\n%sm(usic) c(lear) - *To clear the queue*" $prefix $prefix $prefix $prefix $prefix $prefix }}
+  {{ $syntax := printf "❌ Syntax:\n%sm(usic) l(ist) - *To list all the available music*\n%sm(usic) p(lay) <song> - *To play a song*\n%sm(usic) q(ueue) <song> - *To queue a song*\n%sm(usic) s(kip) - *To skip the current song*\n%sm(usic) e(nd) - *To end the music*\n%sm(usic) c(lear) - *To clear the queue*\n%sm(usic) r(andom) - *To play a random song*" $prefix $prefix $prefix $prefix $prefix $prefix $prefix }}
   {{ $args := parseArgs 1 $syntax (carg "string" "action") (carg "string" "song") }}
   {{ $a := reFind `.` ($args.Get 0) | lower }}
   {{ if not (eq $a "l" "p" "q" "s" "e" "c" "r") }}
@@ -129,18 +119,20 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
         {{ if eq $a "p" }}{{/* Play command with song */}}
           {{ if and $yagVC (not $q) }}
 🔮 **Next up** `{{ $name }}`
-            {{ dbSet 20 "queue" ((cslice ($song)).AppendSlice $nq) }}
+            {{ dbSet 20 "queue" (cslice $song) }}
           {{ else if and $userVC (not $yagVC) }}
-               {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]" )) }}
+            {{/* {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
+            {{ execCC .CCID nil 0 1 }} */}}
+            {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]" )) }}
 ❌ **You're not in a voice channel!**
-               {{ else }}
+            {{ else }}
 🎶 **Now playing** `{{ $name }}`
-               {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-			         {{ end }}
-        {{ else if and $yagVC $q }}{{/* Queue command with song */}}
+              {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+			      {{ end }}
+          {{ else if and $yagVC $q }}{{/* Queue command with song */}}
 📃 **Queued** `{{ $name }}`
-          {{ dbSet 20 "queue" ($q.Append $song) }}
-		{{ end }}
+            {{ dbSet 20 "queue" ($q.Append $song) }}
+		      {{ end }}
         {{ else }}{{/* Queue command with song */}}
 📃 **Queued** `{{ $name }}`
           {{ dbSet 20 "queue" ($q.Append $song) }}
@@ -152,8 +144,8 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{/* {{ if $q }} If there is a queue */}}
       {{ template "announce" (cslice 1 $q) }}
 {{/* 📃 **Queue:**
-        {{- range $i, $_ := $q }}
-          {{- printf "\n%d.\t`%s - %s`" (add $i 1) $_.artist $_.title -}}
+        {{- range $i, $e := $q }}
+          {{- printf "\n%d.\t`%s - %s`" (add $i 1) $e.artist $e.title -}}
         {{ end }}
       {{ else }} If the queue is empty 
 ❌ **Queue is empty!**
