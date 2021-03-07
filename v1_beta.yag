@@ -18,17 +18,18 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
   {{ if eq (index . 0) 0 }}
     {{ $display = print (index . 1).artist " - " (index . 1).title "\n\nLength:" (index . 1).length }}
   {{ else }}
-    {{ if eq (index . 0) 1 }}
-      {{ $title = "📃 Queue" }}
-    {{ else }}
-      {{ $title = "🎵 Available songs" }}
-    {{ end }}
-    {{ $embed.Set "title" $title }}
     {{- range $i, $e := index . 1 }}
       {{- $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $i 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
     {{ else }}
       {{ $display = "❌ **Queue is empty!**" }}
     {{ end }}
+    {{ if eq (index . 0) 1 }}
+      {{ $title = "📃 Queue" }}
+    {{ else }}
+      {{ $title = "🎵 Available songs" }}
+      {{ $display = print $display "\n\n\n\n**Type `-music play <number?` to play the corresponding song**" }}
+    {{ end }}
+    {{ $embed.Set "title" $title }}
     {{ $embed.Set "description" $display }}
     {{ sendMessage nil (cembed $embed) }}
   {{ end }}
@@ -68,15 +69,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ end }}
     {{ end }}
     {{ if eq $a "l" }}{{/* List command */}}
-      {{/* {{ $display := "" }}
-      {{- range $i, $e := $songs }}
-        {{- $display = printf "%s\n%d. %s - %s " $display (add $i 1) $e.artist $e.title }}
-      {{ end }} */}}
       {{ template "announce" (cslice 2 $songs) }}
-      {{/* {{ sendMessage nil (cembed
-        "title" "🎵 **Available songs:**"
-        "color" 14232643
-        "description" $display) }} */}}
     {{ else if eq $a "s" }} {{/* Skip command */}}
       {{ cancelScheduledUniqueCC .CCID "music" }}
       {{ if $nq }}
@@ -85,7 +78,8 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
         {{ $sil := execAdmin "sbclose" }}{{ sleep 1 }}
         {{ $sil := exec "sb" (print $name " [" $song.length "]") }}
 ⏭ **Skipped!**
-🎶 **Now playing** `{{ $name }}`
+{{/* 🎶 **Now playing** `{{ $name }}` */}}
+        {{ template "announce" (cslice 0 $song) }}
         {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
         {{ dbSet 20 "queue" $nq }}
       {{ else }}
@@ -123,7 +117,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
           {{ else if and $userVC (not $yagVC) }}
             {{/* {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
             {{ execCC .CCID nil 0 1 }} */}}
-            {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]" )) }}
+            {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]")) }}
 ❌ **You're not in a voice channel!**
             {{ else }}
 🎶 **Now playing** `{{ $name }}`
@@ -143,13 +137,6 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ else if eq $a "q" }}{{/* Queue command without song */}}
       {{/* {{ if $q }} If there is a queue */}}
       {{ template "announce" (cslice 1 $q) }}
-{{/* 📃 **Queue:**
-        {{- range $i, $e := $q }}
-          {{- printf "\n%d.\t`%s - %s`" (add $i 1) $e.artist $e.title -}}
-        {{ end }}
-      {{ else }} If the queue is empty 
-❌ **Queue is empty!**
-      {{ end }} */}}
     {{ else }}{{/* Play command without song */}}
       {{ if $q }}{{/* If there is a queue */}}
         {{ $song := index $q 0 }}
