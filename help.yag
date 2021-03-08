@@ -1,4 +1,3 @@
-{{ if .ExecData }}
 {{ $commands := sdict
   "Song" (cslice
     (cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
@@ -61,7 +60,4 @@
   {{ sendMessage nil (cembed $emb) }}
 {{ else }}
 ❌ Couldn't find command `{{ .ExecData }}`!
-{{ end }}
-{{ else }}
-{{ execCC .CCID nil 0 (index .Args 1) }}
 {{ end }}
