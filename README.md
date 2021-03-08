@@ -16,7 +16,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 `skip` - Skips the current song playing.  
 `end` - Stops the music player.  
 `clear` - Clears the entire queue.  
-`random` - Adds a random song to play.
+`random` - Queues a random song to play.
 
 ## Instructions for Setting up
 1. Add cc to custom commands. Trigger: Reggex with `\A-m(usic)?(\s|\z)`
