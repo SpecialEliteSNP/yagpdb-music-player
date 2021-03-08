@@ -89,87 +89,85 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ end }}
     {{ end }}
     {{ $a := lower (index .Args 1) }}
-    {{ if eq $a "list" }}
+    {{ if eq $a "list" "l" }}
       {{ template "announce" (cslice $p 2 $songs (or $arg 1)) }}
-    {{ else if eq $a "help" }}
+    {{ else if eq $a "help" "h" }}
       {{ if $arg }}
         {{ execCC $helpCC nil 0 $arg }}
       {{ else }}
         {{ sendMessage nil (cembed "title" "❌ Invalid usage" "description" (print $p "music help <action>") "color" 16734296) }}
       {{ end }}
     {{ else }}
-      {{ if reFind `^(play(all|skip|top)?|stop|search|nowplaying|grab|replay|skip|list|queue|shuffle|clear)$` $a }}
-        {{ $invUsg := false }}
-        {{ if eq $yagVC 0 }}
+      {{ $invUsg := false }}
+      {{ if eq $yagVC 0 }}
 ❌ <@204255221017214977> **is not playing anything right now!**
-        {{ else if eq $userVC 0 }}
+      {{ else if eq $userVC 0 }}
 ❌ **You're not in a voice channel!**
-        {{ else if ne $yagVC $userVC }}
+      {{ else if ne $yagVC $userVC }}
 ❌ **You need to be in the same voice channel as YAGPDB!**
-        {{ else if eq $a "play" }}
-        {{ else if eq $a "playall" }}
-          {{ dbSet 20 "queue" ($q.AppendSlice $songs) }}
-        {{ else if eq $a "playskip" }}
-        {{ else if eq $a "playtop" }}
-        {{ else if eq $a "stop" }}
-          {{ if $q }}
-            {{ cancelScheduledUniqueCC .CCID "music" }}
-            {{ $sil := execAdmin "sbclose" }}
+      {{ else if eq $a "play" "p" }}
+      {{ else if eq $a "playall" "pa" }}
+        {{ dbSet 20 "queue" ($q.AppendSlice $songs) }}
+      {{ else if eq $a "playtop" "pt" "ptop" }}
+      {{ else if eq $a "playskip" "ps" "pskip" "playnow" "pn" }}
+      {{ else if eq $a "stop" "e" }}
+        {{ if $q }}
+          {{ cancelScheduledUniqueCC .CCID "music" }}
+          {{ $sil := execAdmin "sbclose" }}
 🛑 **Music stopped**
-          {{ else }}
+        {{ else }}
 ❌ **Nothing is playing right now!**
-          {{ end }}
-        {{ else if eq $a "search" }}
-          {{ if $arg }}
-            {{ $found := cslice }}
-            {{ range $i, $e := $songs }}
-              {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title }}
-                {{ $found = $found.Append ($e.Set "number" $i) }}
-              {{ end }}
-            {{ end }}
-            {{ $emb := sdict }}
-            {{ $display := "" }}
-            {{ with $found }}
-              {{ range . }}
-                {{ $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
-              {{ end }}
-              {{ sendMessage nil (cembed "title" "🎵 Songs found" "description" $display) }}
-            {{ else }}
-❌ **No songs found with `{{ $arg }}`!**
-            {{ end }}
-          {{ else }}{{ $invUsg = true }}{{ end }}
-        {{ else if eq $a "nowplaying" }}
-          {{/* For when we have implemented the "requested by" */}}
-          {{/* {{ printf "Artist: %s\n\nTitle: %s\n\nLength: %s\n\nRequested By: %s" .artist .title .length .reqby }} */}}
-          {{ printf "Artist: %s\n\nTitle: %s\n\nLength: %s" .artist .title .length }}
-        {{ else if eq $a "grab" }}
-          {{ with index $q 0 }}
-            {{ sendDM (printf "Artist: %s\n\nTitle: %s\n\nLength: " .artist .title .length) }}
-          {{ else }}
-❌ **Nothing is playing right now!**
-          {{ end }}
-        {{ else if eq $a "replay" }}
-          {{ with index $q 0 }}
-            {{ dbSet 20 "queue" ((cslice .).AppendSlice $q) }}
-          {{ else }}
-❌ **Nothing is playing right now!**
-          {{ end }}
-        {{ else if eq $a "skip" }}
-        {{ else if eq $a "queue" }}
-        {{ else if eq $a "shuffle" }}
-          {{/* {{ if $q }} */}}
-        {{ else if eq $a "clear" }}
-          {{ if $q }}
-            {{ dbDel 20 "queue" }}
-🗑 **Queue cleared!**
-          {{ else }}
-❌ **Nothing to clear**
-          {{ end }}
         {{ end }}
-        {{ if $invUsg }}{{ sendMessage nil (cembed "title" "❌ Invalid usage" "description" (print "Type `" $p "music help " $a "` for info")) }}{{ end }}
+      {{ else if eq $a "search" "find" }}
+        {{ if $arg }}
+          {{ $found := cslice }}
+          {{ range $i, $e := $songs }}
+            {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title }}
+              {{ $found = $found.Append ($e.Set "number" $i) }}
+            {{ end }}
+          {{ end }}
+          {{ $emb := sdict }}
+          {{ $display := "" }}
+          {{ with $found }}
+            {{ range . }}
+              {{ $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
+            {{ end }}
+            {{ sendMessage nil (cembed "title" "🎵 Songs found" "description" $display) }}
+          {{ else }}
+❌ **No songs found with `{{ $arg }}`!**
+          {{ end }}
+        {{ else }}{{ $invUsg = true }}{{ end }}
+      {{ else if eq $a "nowplaying" "np" }}
+        {{/* For when we have implemented the "requested by" */}}
+        {{/* {{ printf "Artist: %s\n\nTitle: %s\n\nLength: %s\n\nRequested By: %s" .artist .title .length .reqby }} */}}
+        {{ printf "Artist: %s\n\nTitle: %s\n\nLength: %s" .artist .title .length }}
+      {{ else if eq $a "grab" "save" "yoink" }}
+        {{ with index $q 0 }}
+          {{ sendDM (printf "Artist: %s\n\nTitle: %s\n\nLength: " .artist .title .length) }}
+        {{ else }}
+❌ **Nothing is playing right now!**
+        {{ end }}
+      {{ else if eq $a "replay" }}
+        {{ with index $q 0 }}
+          {{ dbSet 20 "queue" ((cslice .).AppendSlice $q) }}
+        {{ else }}
+❌ **Nothing is playing right now!**
+        {{ end }}
+      {{ else if eq $a "skip" "voteskip" "next" "s" }}
+      {{ else if eq $a "queue" "q" }}
+      {{ else if eq $a "shuffle" }}
+        {{/* {{ if $q }} */}}
+      {{ else if eq $a "clear" "cl" }}
+        {{ if $q }}
+          {{ dbDel 20 "queue" }}
+🗑 **Queue cleared!**
+        {{ else }}
+❌ **Nothing to clear**
+        {{ end }}
       {{ else }}
         {{ sendMessage nil $syntaxEmb }}
       {{ end }}
+      {{ if $invUsg }}{{ sendMessage nil (cembed "title" "❌ Invalid usage" "description" (print "Type `" $p "music help " $a "` for info")) }}{{ end }}
     {{ end }}
   {{ else }}
     {{ sendMessage nil $syntaxEmb }}
