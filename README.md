@@ -4,11 +4,7 @@ YAGPDB Music Player
 ## This custom command is built to be used with YAGPDB.
 This will take the soundboard commands and manipulate them to act like a music player with custom music you upload to the soundboard.
 
-## The main command:
-`-music` The leading command for the music system.
-
 ## The command actions are as follows:
-**These are to be added after the main command and can all be used as a single letter, just like `-music` can also be used as `-m`.**
 
 `play` Plays a song with the given name.
 
@@ -20,7 +16,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `nowplaying` Shows what song YAGPDB is currently playing.
 
-`grab` (cslice "save" "yoink") "Saves the current playing song to your Direct Messages.
+`grab` Saves the current playing song to your Direct Messages.
 
 `replay` Resets the progress of the current song.
 
