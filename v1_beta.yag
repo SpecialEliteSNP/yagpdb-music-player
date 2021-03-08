@@ -11,33 +11,40 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
 
 {{ define "announce" }}
-  {{/* https://toppng.com/uploads/preview/musical-note-emoji-ico-11563291709xigzmoiifb.png */}}
+  {{ $s := index . 1 }}
   {{ $embed := sdict "color" 0x32BAFB "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") }}
   {{ $title := "🎶 Now playing" }}
-  {{ $page := 1 }} {{/* Default page to start at */}}
-  {{ if  (index . 2) }} {{ $page = . | toInt }} {{ end }} {{/* If the user provided a page, change $page variable to that */}}
-  {{ $skip := mult (sub $page 1) 10 }} {{/* Amount of entries to skip */}}
-  {{ $num := $skip }}
   {{ $display := "" }}
   {{ if eq (index . 0) 0 }}
-    {{ $display = print (index . 1).artist " - " (index . 1).title "\n\nLength:" (index . 1).length }}
+    {{ $display = print $s.artist " - " $s.title "\n\nLength:" $s.length }}
   {{ else }}
-    {{- range $e := (index . 1) $skip }}
-	  {{ $num = add $num 1 }}
-      {{- $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
+    {{ $pages := toInt (roundCeil (div (toFloat (len $s)) 5)) }}
+    {{ $page := toInt (index . 2) }}
+    {{ if le $page $pages }}
+      {{ $embed.Set "footer" (sdict "text" (print "Page " $page "/" $pages)) }}
+      {{ $num := sub (mult $page 5) 5 }}
+      {{ $start := $num }}
+      {{ $stop := add $num 5 }}
+      {{- range $i, $e := $s }}
+        {{ if and (ge $i $start) (lt $i $stop) }}
+          {{ $num = add $num 1 }}
+          {{- $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
+        {{ end }}
+      {{ else }}
+        {{ $display = "❌ **Queue is empty!**" }}
+      {{ end }}
+      {{ if eq (index . 0) 1 }}
+        {{ $title = "📃 Queue" }}
+      {{ else }}
+        {{ $title = "🎵 Available songs" }}
+        {{ $display = print $display "\n\n**Type `-music play <songname>` to play the corresponding song**" }}
+      {{ end }}
+      {{ $embed.Set "title" $title }}
+      {{ $embed.Set "description" $display }}
+      {{ sendMessage nil (cembed $embed) }}
     {{ else }}
-      {{ $display = "❌ **Queue is empty!**" }}
+❌ **That page doesn't exist!**
     {{ end }}
-    {{ if eq (index . 0) 1 }}
-      {{ $title = "📃 Queue" }}
-    {{ else }}
-      {{ $title = "🎵 Available songs" }}
-      {{ $display = print $display "\n\n**Type `-music play <songname>` to play the corresponding song**" }}
-    {{ end }}
-    {{ $embed.Set "title" $title }}
-    {{ $embed.Set "description" $display }}
-	{{ $embed.Set "footer" (sdict "text" (joinStr "" "Page " $page)) }}
-    {{ sendMessage nil (cembed $embed) }}
   {{ end }}
 {{ end }}
 
@@ -75,8 +82,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ end }}
     {{ end }}
     {{ if eq $a "l" }}{{/* List command */}}
-	  {{ $pg := $args.Get 1 }}
-      {{ template "announce" (cslice 2 $songs $pg) }}
+      {{ template "announce" (cslice 2 $songs (or ($args.Get 1) 1)) }}
     {{ else if eq $a "s" }} {{/* Skip command */}}
       {{ cancelScheduledUniqueCC .CCID "music" }}
       {{ if $nq }}
@@ -146,8 +152,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ end }}
     {{ else if eq $a "q" }}{{/* Queue command without song */}}
       {{/* {{ if $q }} If there is a queue */}}
-	  {{ $pg := $args.Get 1 }}
-      {{ template "announce" (cslice 1 $q $pg) }}
+      {{ template "announce" (cslice 1 $q (or ($args.Get 1) 1)) }}
     {{ else }}{{/* Play command without song */}}
       {{ if $q }}{{/* If there is a queue */}}
         {{ $song := index $q 0 }}
