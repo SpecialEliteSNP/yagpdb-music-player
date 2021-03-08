@@ -29,7 +29,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 `removedupes` - Removes duplicate songs from the queue
 
 ## Instructions for Setting up
-1. Add cc to custom commands. Trigger - Regex: `\A(-\s?|<@!?204255221017214977>\s*)m(usic)?(\s|\z)`
+1. Add cc to custom commands. Trigger - Regex: `\A(-\s?|<@!?204255221017214977>\s*)m(usic)?(\s|\z)`. Where `-` is your server's prefix.
 2. Add songs withing soundboard with following format: `Artist name - Title goes here [3m43s]`
 3. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
 4. Enjoy the new Music Player!
