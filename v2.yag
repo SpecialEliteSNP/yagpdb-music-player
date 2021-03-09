@@ -14,7 +14,7 @@
 
 {{define "announce"}}
 	{{$p := index . 0}}{{$s := index . 2}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
-	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength:" $s.length))}}
+	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`"))}}
 	{{else}}
 		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 3)}}
 		{{if and (gt $page 0) (le $page $pages)}}

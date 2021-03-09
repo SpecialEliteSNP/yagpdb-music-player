@@ -9,7 +9,7 @@
 		(cslice "nowplaying" (cslice "np") "Shows what song the bot is currently playing")
 		(cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
 		(cslice "replay" (cslice) "Resets the progress of the current song")
-		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
+		(cslice "skip" (cslice "next" "s") "Votes to skip the current playing song" "[number]")
 		(cslice "list" (cslice "l") "Lists all available music from the soundboard" "[page]")
 
 		(cslice "queue" (cslice "q") "Shows the queue" "[page]")
