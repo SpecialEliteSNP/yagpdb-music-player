@@ -71,7 +71,7 @@
 		{{else if eq $a "playall" "pa"}}
 			{{dbSet 20 "queue" ($q.AppendSlice $songs)}}📃 **Queued all songs I could find!**
 		{{else if eq $a "queue" "q"}}
-			{{template "announce" (cslice $p 1 $nq (or $arg 1))}}
+			{{$t := $q}}{{if $yagVC}}{{$t = $nq}}{{end}}{{template "announce" (cslice $p 1 $t (or $arg 1))}}
 		{{else}}
 			{{if not (reFind `^(n(?:owplaying|p)|(?:voteski|s(?:to|ki))p|p(?:lay(?:skip|now|top)|(?:ski|to)p|[nst])|s(?:(?:huffl|av)e|tart)|replay|clear|yoink|grab|next|end|cl|st?|e)$` $a)}}{{sendMessage nil (cembed $syntax)}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
