@@ -73,7 +73,7 @@
 		{{else if eq $a "queue" "q"}}
 			{{template "announce" (cslice $p 1 $q (or $arg 1))}}
 		{{else}}
-			{{if not (reFind `^(n(?:owplaying|ext|p)|(?:voteski|s(?:to|ki))p|p(?:lay(?:skip|now|top)|(?:ski|to)p|[nst])|s(?:huffl|av)e|replay|clear|yoink|grab|end|cl|st|e|s)$` $a)}}{{sendMessage nil (cembed $syntax)}}
+			{{if not (reFind `^(n(?:owplaying|p)|(?:voteski|s(?:to|ki))p|p(?:lay(?:skip|now|top)|(?:ski|to)p|[nst])|s(?:(?:huffl|av)e|tart)|replay|clear|yoink|grab|next|end|cl|st?|e)$` $a)}}{{sendMessage nil (cembed $syntax)}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
 			{{else if eq $a "start"}}
 			   {{ if $q }}
