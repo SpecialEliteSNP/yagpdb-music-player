@@ -31,22 +31,6 @@
 	{{end}}
 {{end}}
 
-{{define "play"}}
-	{{$q := index . 1}}{{$nq := index . 2}}{{$arg := index . 4}}
-	{{if $arg}}
-		{{$song := sdict}}{{$len := 0}}
-		{{range index . 3}}
-			{{- $found := len (reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) .title) -}}
-			{{- if and $found (or (eq $len 0) (lt $found $len)) -}}{{- $len = $found -}}{{- $song = sdict . -}}{{- end -}}
-		{{end}}
-		{{if $song}}
-			{{if eq (index . 0) 0}}{{dbSet 20 "queue" ($q.Append $song)}}📃 **Queued `{{print $song.artist " - " $song.title}}`!**
-			{{else}}{{dbSet 20 "queue" ((cslice (index $q 0) $song).AppendSlice $nq)}}📃 **Next up `{{print $song.artist " - " $song.title}}`!**{{ end }}
-		{{else}}❌ **Couldn't find `{{$arg}}`!**{{end}}
-	{{else}}❌ **Please specify a song!**{{end}}
-{{end}}
-
-
 {{/* Automation */}}
 {{if .ExecData}}
 	{{if and $nq $yagVC}}{{/* If there are still songs in the queue, and bot is still in VC */}}
@@ -68,19 +52,36 @@
 		{{else if eq $a "search" "find"}}
 			{{if $arg}}{{$found := cslice}}{{range $i, $e := $songs}}{{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title -}}{{- $found = $found.Append (sdict "artist" $e.artist "length" $e.length "title" $e.title "number" $i) -}}{{- end -}}{{end}}{{with $found}}{{$emb := sdict "title" "🎵 Songs found"}}{{$display := ""}}{{range $i, $e := .}}{{if lt $i 5}}{{$display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length}}{{end}}{{end}}{{if ge (len $found) 5}}{{$display = print $display "\n\n\n**Only showing the first 5 results**"}}{{end}}{{$emb.Set "description" $display}}{{sendMessage nil (cembed $emb)}}{{else}}❌ **No songs found with `{{$arg}}`!**{{end}}{{else}}❌ **Please specify a search query!**{{end}}
 		{{else if eq $a "play" "p"}}
-			{{template "play" (cslice 0 $q $nq $songs $arg)}}
+			{{if $arg}}{{$song := sdict}}{{$len := 0}}{{range $songs}}{{- $found := len (reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) .title) -}}{{- if and $found (or (eq $len 0) (lt $found $len)) -}}{{- $len = $found -}}{{- $song = sdict . -}}{{- end -}}{{end}}{{if $song}}{{dbSet 20 "queue" ($q.Append $song)}}📃 **Queued `{{print $song.artist " - " $song.title}}`!**{{else}}❌ **Couldn't find `{{$arg}}`!**{{end}}{{else}}❌ **Please specify a song!**{{end}}
 		{{else if eq $a "playall" "pa"}}
 			{{dbSet 20 "queue" ($q.AppendSlice $songs)}}📃 **Queued all songs I could find!**
 		{{else if eq $a "queue" "q"}}
 			{{template "announce" (cslice $p 1 $q (or $arg 1))}}
 		{{else}}
-			{{if not (reFind `^(n(?:owplaying|ext|p)|(?:voteski|s(?:to|ki))p|p(?:lay(?:skip|now|top)|(?:ski|to)p|[nst])|s(?:huffl|av)e|replay|clear|yoink|grab|end|cl|st|e|s)$` $a)}}{{sendMessage nil (cembed $syntax)}}
+			{{if not (reFind `^(n(owplaying|p)|(vote|play)skip|p(laynow|[ns])|s((huffl|av)e|t(art|op)?|kip)?|replay|clear|yoink|grab|next|end|cl|e)$` $a)}}{{sendMessage nil (cembed $syntax)}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
 			{{else if eq $a "start"}}
+			   {{ if $q }}
+			      {{ $song := index $q 0 }}
+			      {{ $name := print $song.artist " - " $song.title }}
+			      {{ $fil := exec "sb" (print $name " [" $song.length "]") }}🎶 **Music started!**
+			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+			      {{ dbSet 20 "queue" $nq }}
+			   {{ else }}🤷‍♂️ **No songs in the queue**
+			   {{ end }}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botid}}>!**
 			{{else if eq $a "playtop" "pt" "ptop"}}
-				{{template "play" (cslice 1 $q $nq $songs $arg)}}
+				{{if $arg}}
+					{{$song := sdict}}
+					{{range $songs}}
+						{{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title -}}
+							{{- $song = sdict . -}}
+						{{- end -}}
+					{{end}}
+				{{else}}❌ **Please specify a song!**{{end}}
+				{{/* {{if $q}}
+					{{dbSet 20 "queue" (cslice (index $q 0) $)}} */}}
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}
 			{{else if eq $a "stop" "st" "end" "e"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**
@@ -94,6 +95,17 @@
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}
 				{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{end}}
 			{{else if eq $a "skip" "voteskip" "next" "s"}}
+			{{ cancelScheduledUniqueCC .CCID "music" }}
+				{{ if $q }}
+					{{ $song := index $q 1 }}
+					{{ $name := print $song.artist " - " $song.title }}
+					{{ $sil := execAdmin "sbclose" }}{{ sleep 1 }}
+					{{ $sil := exec "sb" (print $name " [" $song.length "]") }}⏭ **Skipped!**
+					{{ template "announce" (cslice 0 $song) }}
+					{{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+					{{ dbSet 20 "queue" $q }}
+			   {{ else }}🤷‍♂️ **No more songs in the queue**
+			   {{ end }}
 			{{else if eq $a "shuffle"}}
 				{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}
 			{{else if eq $a "clear" "cl"}}
