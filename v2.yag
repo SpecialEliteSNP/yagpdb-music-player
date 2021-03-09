@@ -83,11 +83,7 @@
 			{{else if eq $a "stop" "end" "e"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}
-				{{/* For when we have implemented the "requested by" */}}
-				{{/* {{printf "Artist: %s\n\nTitle: %s\n\nLength: %s\n\nRequested By: %s" .artist .title .length .reqby}} */}}
-				{{$t := "Nothing"}}{{if $nq}}{{$t := (index $nq 0).title}}{{end}}
-				{{with index $q 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print .artist " - " .title "\n\nLength: `" .length "`\n\nUp next: `" $t "`"))}}{{end}}
-				{{/* {{with index $q 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (printf "%s - %s\n\nLength: `%s`\n\nUp next: `%s`" .artist .title .length $t ))}}{{end}} */}}
+				{{$t := "Nothing"}}{{if $nq}}{{$t := (index $nq 0).title}}{{end}}{{with index $q 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print .artist " - " .title "\n\nLength: `" .length "`\n\nUp next: `" $t "`"))}}{{end}}
 			{{else if eq $a "grab" "save" "yoink"}}
 				{{with index $q 0}}{{sendDM (printf "Artist: %s\n\nTitle: %s\n\nLength: %s" .artist .title .length)}}{{end}}📬 {{.User.Mention}}**, you've got mail!**{{deleteResponse 5}}
 			{{else if eq $a "shuffle"}}
