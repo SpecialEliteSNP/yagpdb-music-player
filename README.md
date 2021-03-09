@@ -4,6 +4,9 @@ YAGPDB Music Player
 ## This custom command is built to be used with YAGPDB.
 This will take the soundboard commands and manipulate them to act like a music player with custom music you upload to the soundboard.
 
+## The main leading command:
+`-music <command>` All commands need to be preceeded by this leading command.
+
 ## The command actions are as follows:
 `play` - Plays a song with the given name  
 `playtop` - Adds a song with the given name **ON TOP OF THE QUEUE**  
