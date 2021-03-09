@@ -14,11 +14,9 @@
 {{$yagVC = .ChannelID}}{{else if eq .UserID $.User.ID}}{{$userVC = .ChannelID}}{{end}}{{end}}
 
 {{define "announce"}}
-	{{$p := index . 0}}
-	{{$s := index . 2}}
+	{{$p := index . 0}}{{$s := index . 2}}
 	{{$embed := sdict "color" 0x32BAFB "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png")}}
-	{{$title := "🎶 Now playing"}}
-	{{$display := ""}}
+	{{$title := "🎶 Now playing"}}{{$display := ""}}
 	{{if eq (index . 1) 0}}
 		{{$display = print $s.artist " - " $s.title "\n\nLength:" $s.length}}
 	{{else}}
@@ -26,14 +24,12 @@
 		{{$page := toInt (index . 3)}}
 		{{if and (gt $page 0) (le $page $pages)}}
 			{{$embed.Set "footer" (sdict "text" (print "Page " $page "/" $pages))}}
-			{{$num := sub (mult $page 5) 5}}
-			{{$start := $num}}
-			{{$stop := add $num 5}}
+			{{$num := sub (mult $page 5) 5}}{{$start := $num}}{{$stop := add $num 5}}
 			{{range $i, $e := $s}}
-				{{if and (ge $i $start) (lt $i $stop)}}
-					{{$num = add $num 1}}
-				 {{$display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length}}
-				{{end}}
+				{{- if and (ge $i $start) (lt $i $stop) -}}
+					{{- $num = add $num 1 -}}
+				  {{- $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length -}}
+				{{- end -}}
 			{{else}}
 				{{$display = "❌ **Queue is empty!**"}}
 			{{end}}
@@ -46,8 +42,7 @@
 			{{$embed.Set "title" $title}}
 			{{$embed.Set "description" $display}}
 			{{sendMessage nil (cembed $embed)}}
-		{{else}}
-❌ **That page doesn't exist!**
+		{{else}}❌ **That page doesn't exist!**
 		{{end}}
 	{{end}}
 {{end}}
@@ -57,15 +52,13 @@
 	{{if and $nq $yagVC}}{{/* If there are still songs in the queue, and bot is still in VC */}}
 		{{$song := index $nq 0}}
 		{{$name := print $song.artist " - " $song.title}}
-		{{if reFind `\AY` (execAdmin "sb" (print $name " [" $song.length "]"))}}
-🛑 **Music stopped**
+		{{if reFind `\AY` (execAdmin "sb" (print $name " [" $song.length "]"))}}🛑 **Music stopped**
 		{{else}}
 			{{template "announce" (cslice $p 0 $song)}}
 {{/* 🎶 **Now playing** `{{$name}}` */}}
 			{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}
 		{{end}}
-	{{else}}{{/* Empty queue */}}
-🏁 **The queue has ended**
+	{{else}}{{/* Empty queue */}}🏁 **The queue has ended**
 	{{end}}
 	{{dbSet 20 "queue" $nq}}
 
@@ -83,7 +76,7 @@
 			{{$syntax}} */}}
 		{{$sb := execAdmin "sb"}}
 		{{$songs := cslice}}
-		{{ range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}
+		{{range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}
 			{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}
 				{{$songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}
 			{{end}}
@@ -92,20 +85,14 @@
 		{{if eq $a "list" "l"}}
 			{{template "announce" (cslice $p 2 $songs (or $arg 1))}}
 		{{else if eq $a "help" "h"}}
-			{{if $arg}}
-				{{execCC $helpCC nil 0 $arg}}
-			{{else}}
-				{{sendMessage nil (cembed "title" "❌ Invalid usage" "description" (print $p "music help <action>") "color" 16734296)}}
-			{{end}}
+			{{with $helpCC}}{{if $arg}}{{execCC . nil 0 $arg}}{{else}}❌ **Please specify an action!**{{end}}{{else}}❌ **Help CCID is not set!**{{end}}
 		{{else}}
 			{{$invUsg := false}}
-			{{if eq $yagVC 0}}
-❌ <@{{$botid}}> **is not playing anything right now!**
-			{{else if eq $userVC 0}}
-❌ **You're not in a voice channel!**
-			{{else if ne $yagVC $userVC}}
-❌ **You need to be in the same voice channel as <@{{$botid}}>!**
+			{{if not $yagVC}}❌ <@{{$botid}}> **is not playing anything right now!**
+			{{else if not $userVC}}❌ **You're not in a voice channel!**
+			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botid}}>!**
 			{{else if eq $a "play" "p"}}
+				{{/* {{if $yagVC}} */}}
 			{{else if eq $a "playall" "pa"}}
 				{{dbSet 20 "queue" ($q.AppendSlice $songs)}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
@@ -113,10 +100,8 @@
 			{{else if eq $a "stop" "st" "end" "e"}}
 				{{if $q}}
 					{{cancelScheduledUniqueCC .CCID "music"}}
-					{{$sil := execAdmin "sbclose"}}
-🛑 **Music stopped**
-				{{else}}
-{{$noPlay}}
+					{{$sil := execAdmin "sbclose"}}🛑 **Music stopped**
+				{{else}}{{$noPlay}}
 				{{end}}
 			{{else if eq $a "search" "find"}}
 				{{if $arg}}
@@ -133,8 +118,7 @@
 							{{$display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length}}
 						{{end}}
 						{{sendMessage nil (cembed "title" "🎵 Songs found" "description" $display)}}
-					{{else}}
-❌ **No songs found with `{{$arg}}`!**
+					{{else}}❌ **No songs found with `{{$arg}}`!**
 					{{end}}
 				{{else}}{{$invUsg = true}}{{end}}
 			{{else if eq $a "nowplaying" "np"}}
@@ -151,10 +135,8 @@
 				{{/* {{if $q}} */}}
 			{{else if eq $a "clear" "cl"}}
 				{{if $q}}
-					{{dbDel 20 "queue"}}
-🗑 **Queue cleared!**
-				{{else}}
-❌ **Nothing to clear**
+					{{dbDel 20 "queue"}}🗑 **Queue cleared!**
+				{{else}}❌ **Nothing to clear!**
 				{{end}}
 			{{else}}
 				{{sendMessage nil $syntaxEmb}}
