@@ -93,6 +93,7 @@
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**
 			{{else if eq $a "nowplaying" "np"}}
 				{{/* For when we have implemented the "requested by" */}}
+				{{/* {{printf "Artist: %s\n\nTitle: %s\n\nLength: %s\n\nRequested By: %s" .artist .title .length .reqby}} */}}
 				{{with index $q 0}}{{printf "Artist: %s\n\nTitle: %s\n\nLength: %s" .artist .title .length}}{{end}}
 			{{else if eq $a "grab" "save" "yoink"}}
 				{{with index $q 0}}{{sendDM (printf "Artist: %s\n\nTitle: %s\n\nLength: " .artist .title .length)}}{{end}}📬 {{.User.Mention}}**, you've got mail!**{{deleteResponse 5}}
