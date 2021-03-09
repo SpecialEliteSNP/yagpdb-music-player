@@ -13,8 +13,8 @@
 {{$yagVC = .ChannelID}}{{else if eq .UserID $.User.ID}}{{$userVC = .ChannelID}}{{end}}{{end}}
 
 {{define "announce"}}
-	{{$p := index . 0}}{{$s := index . 2}}{{$title := }}{{$description := ""}}{{$footer := sdict}}
-	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" print $s.artist " - " $s.title "\n\nLength:" $s.length)}}
+	{{$p := index . 0}}{{$s := index . 2}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
+	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength:" $s.length))}}
 	{{else}}
 		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 3)}}
 		{{if and (gt $page 0) (le $page $pages)}}
@@ -25,7 +25,7 @@
 				  {{- $description = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $description $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length -}}
 				{{- end -}}
 			{{else}}{{$description = "❌ **Queue is empty!**"}}{{end}}
-			{{if eq (index . 1) 1}}{{$title = "📃 Queue"}}{{else}}{{$title = "🎵 Available songs"}}{{$description = print $description "\n\n\n**Type **_" $p "music list [page]_** to see other pages (if there are any)**"}}{{end}}
+			{{if ne (index . 1) 1}}{{$title = "🎵 Available songs"}}{{$description = print $description "\n\n\n**Type **_" $p "music list [page]_** to see other pages (if there are any)**"}}{{end}}
 			{{sendMessage nil (cembed "title" $title "description" $description "color" 0x32BAFB "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" $footer)}}
 		{{else}}❌ **That page doesn't exist!**{{end}}
 	{{end}}
