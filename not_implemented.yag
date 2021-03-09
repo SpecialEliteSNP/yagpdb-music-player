@@ -1,0 +1,84 @@
+    {{ else if eq $a "s" }} {{/* Skip command */}}
+      {{ cancelScheduledUniqueCC .CCID "music" }}
+      {{ if $nq }}
+        {{ $song := index $nq 0 }}
+        {{ $name := print $song.artist " - " $song.title }}
+        {{ $sil := execAdmin "sbclose" }}{{ sleep 1 }}
+        {{ $sil := exec "sb" (print $name " [" $song.length "]") }}
+⏭ **Skipped!**
+{{/* 🎶 **Now playing** `{{ $name }}` */}}
+        {{ template "announce" (cslice 0 $song) }}
+        {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+        {{ dbSet 20 "queue" $nq }}
+      {{ else }}
+🤷‍♂️ **No more songs in the queue**
+      {{ end }}
+    {{ else if eq $a "c" }}{{/* Clear command */}}
+      {{ if $q }}
+        {{ dbDel 20 "queue" }}
+🗑 **Queue cleared!**
+      {{ else }}
+❌ **Nothing to clear**
+      {{ end }}
+    {{ else if eq $a "r" }}{{/* Random song */}}
+      {{ $song := index $songs (randInt (sub (len $songs) 1)) }}
+      {{ $name := print $song.artist " - " $song.title }}
+✨ **Random song is...** `{{ $name }}`
+      {{ dbSet 20 "queue" ($q.Append $song) }}
+    {{ else if $arg }}{{/* If a song was provided */}}
+      {{ $song := sdict }}
+      {{ $len := 0 }}
+	    {{ range $songs }}
+        {{ $found := len (reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) .title) }}
+        {{ if and $found (or (eq $len 0) (lt $found $len)) }}
+          {{ $len = $found }}
+          {{ $song = sdict . }}
+        {{ end }}
+      {{ end }}
+      {{ if $song }}{{/* If a song was found */}}
+        {{ $name := print $song.artist " - " $song.title }}
+        {{ if eq $a "p" }}{{/* Play command with song */}}
+          {{ if and $yagVC (not $q) }}
+🔮 **Next up** `{{ $name }}`
+            {{ dbSet 20 "queue" (cslice $song) }}
+          {{ else if and $userVC (not $yagVC) }}
+            {{/* {{ dbSet 20 "queue" ((cslice 0 $song).AppendSlice $q) }}
+            {{ execCC .CCID nil 0 1 }} */}}
+            {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]")) }}
+❌ **You're not in a voice channel!**
+            {{ else }}
+🎶 **Now playing** `{{ $name }}`
+              {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+			      {{ end }}
+          {{ else if and $yagVC $q }}{{/* Queue command with song */}}
+📃 **Queued** `{{ $name }}`
+            {{ dbSet 20 "queue" ($q.Append $song) }}
+		      {{ end }}
+        {{ else }}{{/* Queue command with song */}}
+📃 **Queued** `{{ $name }}`
+          {{ dbSet 20 "queue" ($q.Append $song) }}
+        {{ end }}
+      {{ else }}{{/* Provided song was not found */}}
+❌ **Song `{{ $arg }}` not found**, type __{{ $prefix }}music list__ to see a list of available songs.
+      {{ end }}
+    {{ else if eq $a "q" }}{{/* Queue command without song */}}
+      {{/* {{ if $q }} If there is a queue */}}
+      {{ template "announce" (cslice 1 $q (or $arg 1)) }}
+    {{ else }}{{/* Play command without song */}}
+      {{ if $q }}{{/* If there is a queue */}}
+        {{ $song := index $q 0 }}
+        {{ $name := print $song.artist " - " $song.title }}
+        {{ if reFind `\AY` (exec "sb" (print $name " [" $song.length "]")) }}
+❌ **You're not in a voice channel!**
+        {{ else }}{{/* If the user is in a voice channel */}}
+          {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
+🎶 **Now playing** `{{ $name }}`
+        {{ end }}
+      {{ else }}{{/* If the queue is empty */}}
+❌ **Nothing to play!**
+      {{ end }}
+    {{ end }}
+  {{ else }}
+    {{ $syntax }}
+  {{ end }}
+{{ end }}
