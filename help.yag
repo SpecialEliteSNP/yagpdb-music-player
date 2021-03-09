@@ -1,83 +1,72 @@
 {{/* Current commands */}}
 {{ $commands := sdict 
-  "Song" (cslice
-    (cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
-    (cslice "playall" (cslice "pa") "Plays all songs from the soundboard")
-    (cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
-    (cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
-    (cslice "stop" (cslice "st" "end" "e") "Stops the music playback")
-    (cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
-    (cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
-    (cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
-    (cslice "replay" (cslice) "Resets the progress of the current song")
-    (cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
-    (cslice "list" (cslice "l") "Lists all available music from the soundboard" "[page]"))
-  "Queue" (cslice
-    (cslice "queue" (cslice "q") "Shows the first page of the queue" "[page]")
-    (cslice "shuffle" (cslice) "Shuffles the entire queue")
-    (cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]")) }}
+	"Song" (cslice
+		(cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
+		(cslice "playall" (cslice "pa") "Plays all songs from the soundboard")
+		(cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
+		(cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
+		(cslice "stop" (cslice "st" "end" "e") "Stops the music playback")
+		(cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
+		(cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
+		(cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
+		(cslice "replay" (cslice) "Resets the progress of the current song")
+		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
+		(cslice "list" (cslice "l") "Lists all available music from the soundboard" "[page]"))
+	"Queue" (cslice
+		(cslice "queue" (cslice "q") "Shows the first page of the queue" "[page]")
+		(cslice "shuffle" (cslice) "Shuffles the entire queue")
+		(cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]")) }}
 
 {{/* For the final version */}}
 {{ $commands2 := sdict
-  "Song" (cslice
-    (cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
-    (cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
-    (cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
-    (cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
-    (cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
-    (cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
-    (cslice "replay" (cslice) "Resets the progress of the current song")
-    (cslice "loop" (cslice "repeat") "Toggles looping for the current playing song")
-    (cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
-    (cslice "forceskip" (cslice "fs" "fskip") "Skips the current playing song immediately" "[number]")
-    (cslice "pause" (cslice "stop") "Pauses the current playing track")
-    (cslice "resume" (cslice "re" "res" "continue") "Resumes paused music")
-    (cslice "disconnect" (cslice "dc" "leave" "dis" "fuckoff") "Disconnects the bot from the voice channel it is in"))
-  "Queue" (cslice
-    (cslice "queue" (cslice "q") "Shows the first page of the queue" "[page]")
-    (cslice "loopqueue" (cslice "qloop" "lq" "queueloop") "Toggles looping for the whole queue")
-    (cslice "move" (cslice "m" "mv") "Moves a certain song to a chosen (or first) position in the queue" "<old positon> [new position]")
-    (cslice "skipto" (cslice "st") "Skips to a certain position in the queue" "<position>")
-    (cslice "shuffle" (cslice "random") "Shuffles the entire queue")
-    (cslice "remove" (cslice "rm") "Removes a certain entry from the queue" "<number(s)>")
-    (cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]")
-    (cslice "leavecleanup" (cslice "lc") "Removes absent user's songs from the queue")
-    (cslice "removedupes" (cslice "rmd" "rd" "drm") "Removes duplicate songs from the queue")) }}
+	"Song" (cslice
+		(cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
+		(cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
+		(cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
+		(cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
+		(cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
+		(cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
+		(cslice "replay" (cslice) "Resets the progress of the current song")
+		(cslice "loop" (cslice "repeat") "Toggles looping for the current playing song")
+		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
+		(cslice "forceskip" (cslice "fs" "fskip") "Skips the current playing song immediately" "[number]")
+		(cslice "pause" (cslice "stop") "Pauses the current playing track")
+		(cslice "resume" (cslice "re" "res" "continue") "Resumes paused music")
+		(cslice "disconnect" (cslice "dc" "leave" "dis" "fuckoff") "Disconnects the bot from the voice channel it is in"))
+	"Queue" (cslice
+		(cslice "queue" (cslice "q") "Shows the first page of the queue" "[page]")
+		(cslice "loopqueue" (cslice "qloop" "lq" "queueloop") "Toggles looping for the whole queue")
+		(cslice "move" (cslice "m" "mv") "Moves a certain song to a chosen (or first) position in the queue" "<old positon> [new position]")
+		(cslice "skipto" (cslice "st") "Skips to a certain position in the queue" "<position>")
+		(cslice "shuffle" (cslice "random") "Shuffles the entire queue")
+		(cslice "remove" (cslice "rm") "Removes a certain entry from the queue" "<number(s)>")
+		(cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]")
+		(cslice "leavecleanup" (cslice "lc") "Removes absent user's songs from the queue")
+		(cslice "removedupes" (cslice "rmd" "rd" "drm") "Removes duplicate songs from the queue")) }}
 
 {{ $emb := sdict }}
 {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str $.Guild.ID))) (sub (len $e) 1)) `\$0` }}
 {{ block "main" (cslice .ExecData $commands.Song $prefix $emb) }}
-  {{ $cmd := index . 0 }}
-  {{ $prf := index . 2 }}
-  {{ $emb := index . 3 }}
-  {{ range (index . 1) }}
-    {{ if in ((cslice (index . 0)).AppendSlice (index . 1)) $cmd }}
-      {{ $emb.Set "fields" (cslice (sdict "name" "Category:" "value" "Song")) }}
-      {{ $emb.Set "title" (title (index . 0)) }}
-      {{ $als := "" }}
-      {{ range (index . 1) }}
-        {{ $als = print $als ", " . }}
-      {{ else }}
-        {{ $als = ", None" }}
-      {{ end }}
-      {{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Aliases:" "value" (slice $als 2))) }}
-      {{ $emb.Set "description" (index . 2) }}
-      {{ $usg := "" }}
-      {{ if gt (len .) 3 }}
-        {{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Usage:" "value" (print $prf $cmd " " (index . 3)))) }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
+	{{ $cmd := index . 0 }}{{ $prf := index . 2 }}{{ $emb := index . 3 }}
+	{{ range (index . 1) }}
+		{{ if in ((cslice (index . 0)).AppendSlice (index . 1)) $cmd }}
+			{{ $emb.Set "fields" (cslice (sdict "name" "Category:" "value" "Song")) }}
+			{{ $emb.Set "title" (title (index . 0)) }}
+			{{ $als := "" }}
+			{{ range (index . 1) }}
+				{{ $als = print $als ", " . }}
+			{{ else }}
+				{{ $als = ", None" }}
+			{{ end }}
+			{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Aliases:" "value" (slice $als 2))) }}
+			{{ $emb.Set "description" (index . 2) }}
+			{{ $usg := "" }}
+			{{ if gt (len .) 3 }}
+				{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Usage:" "value" (print $prf $cmd " " (index . 3)))) }}
+			{{ end }}
+		{{ end }}
+	{{ end }}
 {{ end }}
 
-
-{{ if not $emb.title }}
-  {{ template "main" (cslice .ExecData $commands.Queue $prefix $emb) }}
-{{ end }}
-
-
-{{ if $emb.title }}
-  {{ sendMessage nil (cembed $emb) }}
-{{ else }}
-❌ Couldn't find command `{{ .ExecData }}`!
-{{ end }}
+{{ if not $emb.title }}{{ template "main" (cslice .ExecData $commands.Queue $prefix $emb) }}{{ end }}
+{{ if $emb.title }}{{ sendMessage nil (cembed $emb) }}{{ else }}❌ **Couldn't find command `{{ .ExecData }}`!**{{ end }}
