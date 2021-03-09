@@ -1,6 +1,5 @@
 {{/* Current commands */}}
-{{ $commands := sdict 
-	"Song" (cslice
+{{ $commands := cslice
 		(cslice "play" (cslice "p") "Plays a song with the given name" "<query>")
 		(cslice "playall" (cslice "pa") "Plays all songs from the soundboard")
 		(cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
@@ -11,11 +10,11 @@
 		(cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
 		(cslice "replay" (cslice) "Resets the progress of the current song")
 		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
-		(cslice "list" (cslice "l") "Lists all available music from the soundboard" "[page]"))
-	"Queue" (cslice
-		(cslice "queue" (cslice "q") "Shows the first page of the queue" "[page]")
+		(cslice "list" (cslice "l") "Lists all available music from the soundboard" "[page]")
+
+		(cslice "queue" (cslice "q") "Shows the queue" "[page]")
 		(cslice "shuffle" (cslice) "Shuffles the entire queue")
-		(cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]")) }}
+		(cslice "clear" (cslice "cl") "Clears the whole queue" "[@user]") }}
 
 {{/* For the final version */}}
 {{ $commands2 := sdict
@@ -46,27 +45,25 @@
 
 {{ $emb := sdict }}
 {{ $e := execAdmin "prefix" }}{{ $prefix := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str $.Guild.ID))) (sub (len $e) 1)) `\$0` }}
-{{ block "main" (cslice .ExecData $commands.Song $prefix $emb) }}
-	{{ $cmd := index . 0 }}{{ $prf := index . 2 }}{{ $emb := index . 3 }}
-	{{ range (index . 1) }}
-		{{ if in ((cslice (index . 0)).AppendSlice (index . 1)) $cmd }}
-			{{ $emb.Set "fields" (cslice (sdict "name" "Category:" "value" "Song")) }}
-			{{ $emb.Set "title" (title (index . 0)) }}
-			{{ $als := "" }}
-			{{ range (index . 1) }}
-				{{ $als = print $als ", " . }}
-			{{ else }}
-				{{ $als = ", None" }}
-			{{ end }}
-			{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Aliases:" "value" (slice $als 2))) }}
-			{{ $emb.Set "description" (index . 2) }}
-			{{ $usg := "" }}
-			{{ if gt (len .) 3 }}
-				{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Usage:" "value" (print $prf $cmd " " (index . 3)))) }}
-			{{ end }}
+{{ range $i, $e := $commands }}
+	{{ if in ((cslice (index $e 0)).AppendSlice (index $e 1)) $.ExecData }}
+		{{ $cat := "Song" }}
+		{{ if gt $i 10 }}
+			{{ $cat = "Queue" }}
+		{{ end }}
+		{{ $emb.Set "fields" (cslice (sdict "name" "Category:" "value" $cat "inline" true)) }}
+		{{ $emb.Set "title" (title (index $e 0)) }}
+		{{ $als := "" }}
+		{{ range (index $e 1) }}
+			{{ $als = print $als ", " . }}
+		{{ else }}
+			{{ $als = ", None" }}
+		{{ end }}
+		{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Aliases:" "value" (slice $als 2) "inline" true)) }}
+		{{ $emb.Set "description" (index $e 2) }}
+		{{ if gt (len $e) 3 }}
+			{{ $emb.Set "fields" ($emb.fields.Append (sdict "name" "Usage:" "value" (print $prefix "music " (index $e 0) " " (index $e 3)))) }}
 		{{ end }}
 	{{ end }}
 {{ end }}
-
-{{ if not $emb.title }}{{ template "main" (cslice .ExecData $commands.Queue $prefix $emb) }}{{ end }}
 {{ if $emb.title }}{{ sendMessage nil (cembed $emb) }}{{ else }}❌ **Couldn't find command `{{ .ExecData }}`!**{{ end }}
