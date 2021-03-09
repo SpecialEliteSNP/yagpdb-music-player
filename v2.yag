@@ -1,8 +1,7 @@
-{{/*
-Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
-*/}}
+{{/*  Trigger: Reggex with `\A-m(usic)?(\s+|\z)`  */}}
 
 {{ $helpCC := 8 }}
+{{ $botid := 204255221017214977 }}
 
 {{/* Saves the whole queue as $q, then removes the first item and saves the rest to $nq */}}
 {{ $q := cslice }}{{ with (dbGet 20 "queue").Value }}{{ $q = $q.AppendSlice . }}{{ end }}
@@ -10,12 +9,12 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
 {{ $e := execAdmin "prefix" }}{{ $p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0` }}
 
 {{/* Checks if User/YAG is in VC, if so, saves channel ID */}}
-{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID 204255221017214977 }}
+{{ $yagVC := 0 }}{{ $userVC := 0 }}{{ range .Guild.VoiceStates }}{{ if eq .UserID $botid }}
 {{ $yagVC = .ChannelID }}{{ else if eq .UserID $.User.ID }}{{ $userVC = .ChannelID }}{{ end }}{{ end }}
 
 {{ define "announce" }}
-  {{ $p := index . 0 }}
-  {{ $s := index . 2 }}
+  {{- $p := index . 0 -}}
+  {{- $s := index . 2 -}}
   {{ $embed := sdict "color" 0x32BAFB "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") }}
   {{ $title := "🎶 Now playing" }}
   {{ $display := "" }}
@@ -32,7 +31,7 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ range $i, $e := $s }}
         {{ if and (ge $i $start) (lt $i $stop) }}
           {{ $num = add $num 1 }}
-          {{ $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
+         {{ $display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display $num $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length }}
         {{ end }}
       {{ else }}
         {{ $display = "❌ **Queue is empty!**" }}
@@ -83,11 +82,11 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ $syntax }} */}}
     {{ $sb := execAdmin "sb" }}
     {{ $songs := cslice }}
-    {{ range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36)) }}
-      {{ with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0) }}
-        {{ $songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2)) }}
-      {{ end }}
-    {{ end }}
+    {{- range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36)) }}
+      {{- with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0) }}
+        {{- $songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2)) }}
+      {{- end }}
+    {{- end }}
     {{ $a := lower (index .Args 1) }}
     {{ if eq $a "list" "l" }}
       {{ template "announce" (cslice $p 2 $songs (or $arg 1)) }}
@@ -100,11 +99,11 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
     {{ else }}
       {{ $invUsg := false }}
       {{ if eq $yagVC 0 }}
-❌ <@204255221017214977> **is not playing anything right now!**
+❌ <@{{ $botid }}> **is not playing anything right now!**
       {{ else if eq $userVC 0 }}
 ❌ **You're not in a voice channel!**
       {{ else if ne $yagVC $userVC }}
-❌ **You need to be in the same voice channel as YAGPDB!**
+❌ **You need to be in the same voice channel as <@{{ $botid }}>!**
       {{ else if eq $a "play" "p" }}
       {{ else if eq $a "playall" "pa" }}
         {{ dbSet 20 "queue" ($q.AppendSlice $songs) }}
@@ -121,11 +120,11 @@ Trigger: Reggex with `\A-m(usic)?(\s+|\z)`
       {{ else if eq $a "search" "find" }}
         {{ if $arg }}
           {{ $found := cslice }}
-          {{ range $i, $e := $songs }}
-            {{ if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title }}
-              {{ $found = $found.Append ($e.Set "number" $i) }}
-            {{ end }}
-          {{ end }}
+          {{- range $i, $e := $songs }}
+            {{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title }}
+              {{- $found = $found.Append ($e.Set "number" $i) }}
+            {{- end }}
+          {{- end }}
           {{ $emb := sdict }}
           {{ $display := "" }}
           {{ with $found }}
