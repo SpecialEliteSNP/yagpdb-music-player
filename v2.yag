@@ -113,6 +113,8 @@
 			   {{ end }}
 			{{else if eq $a "shuffle"}}
 				{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}
+			{{else if eq $a "clear" "cl"}}
+				{{if $nq}}{{dbSet 20 "queue" (cslice (index $q 0))}}🗑 **Queue cleared!**{{else}}❌ **Nothing to clear!**{{end}}
 			{{end}}
 		{{end}}
 	{{else}}{{sendMessage nil $syntax}}{{end}}
