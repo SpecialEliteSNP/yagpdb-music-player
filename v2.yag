@@ -76,7 +76,6 @@
 			{{else if eq $a "replay" "again"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{end}}
 			{{else if eq $a "random" "r"}}
-				{{range seq -1  }}
 				{{with index $songs (randInt (sub (len $songs) 1))}}✨ **Random song is...** `{{print .artist " - " .title}}`{{dbSet 20 "queue" ($q.Append .)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
 				{{template "play" (cslice 1 $q $nq $songs $arg)}}
