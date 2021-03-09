@@ -1,4 +1,4 @@
-{{/* Trigger: Reggex with `\A-m(usic)?(\s+|\z)` */}}
+{{/* Trigger: Regex with `\A-m(usic)?(\s+|\z)` */}}
 
 {{$helpCC := 8}}
 {{$botid := 204255221017214977}}
@@ -110,7 +110,7 @@
 				{{dbSet 20 "queue" ($q.AppendSlice $songs)}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}
-			{{else if eq $a "stop" "e"}}
+			{{else if eq $a "stop" "st" "end" "e"}}
 				{{if $q}}
 					{{cancelScheduledUniqueCC .CCID "music"}}
 					{{$sil := execAdmin "sbclose"}}
@@ -122,9 +122,9 @@
 				{{if $arg}}
 					{{$found := cslice}}
 					{{range $i, $e := $songs}}
-						{{-if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title-}}
-							{{-$found = $found.Append ($e.Set "number" $i)-}}
-						{{-end-}}
+						{{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title -}}
+							{{- $found = $found.Append ($e.Set "number" $i) -}}
+						{{- end -}}
 					{{end}}
 					{{$emb := sdict}}
 					{{$display := ""}}

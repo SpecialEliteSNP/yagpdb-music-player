@@ -5,7 +5,7 @@
     (cslice "playall" (cslice "pa") "Plays all songs from the soundboard")
     (cslice "playtop" (cslice "pt" "ptop") "Adds a song with the given name **on the top of the queue**" "<query>")
     (cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
-    (cslice "stop" (cslice "e") "Stops the music playback")
+    (cslice "stop" (cslice "st" "end" "e") "Stops the music playback")
     (cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
     (cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
     (cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
