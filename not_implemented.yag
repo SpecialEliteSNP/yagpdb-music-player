@@ -1,25 +1,3 @@
-    {{ else if eq $a "s" }} {{/* Skip command */}}
-      {{ cancelScheduledUniqueCC .CCID "music" }}
-      {{ if $nq }}
-        {{ $song := index $nq 0 }}
-        {{ $name := print $song.artist " - " $song.title }}
-        {{ $sil := execAdmin "sbclose" }}{{ sleep 1 }}
-        {{ $sil := exec "sb" (print $name " [" $song.length "]") }}
-⏭ **Skipped!**
-{{/* 🎶 **Now playing** `{{ $name }}` */}}
-        {{ template "announce" (cslice 0 $song) }}
-        {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-        {{ dbSet 20 "queue" $nq }}
-      {{ else }}
-🤷‍♂️ **No more songs in the queue**
-      {{ end }}
-    {{ else if eq $a "c" }}{{/* Clear command */}}
-      {{ if $q }}
-        {{ dbDel 20 "queue" }}
-🗑 **Queue cleared!**
-      {{ else }}
-❌ **Nothing to clear**
-      {{ end }}
     {{ else if eq $a "r" }}{{/* Random song */}}
       {{ $song := index $songs (randInt (sub (len $songs) 1)) }}
       {{ $name := print $song.artist " - " $song.title }}
