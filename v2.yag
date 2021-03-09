@@ -5,7 +5,7 @@
 
 {{/* Saves the whole queue as $q, then removes the first item and saves the rest to $nq */}}
 {{$q := cslice}}{{with (dbGet 20 "queue").Value}}{{$q = $q.AppendSlice .}}{{end}}
-{{$nq := cslice}}{{range $i, $e := $q}}{{if ne $i 0}}{{$nq = $nq.Append $e}}{{end}}{{end}}
+{{$nq := cslice}}{{- range $i, $e := $q}}{{if ne $i 0}}{{$nq = $nq.Append $e}}{{end}}{{end}}
 {{$e := execAdmin "prefix"}}{{$p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
 
 {{/* Checks if User/YAG is in VC, if so, saves channel ID */}}
@@ -81,7 +81,6 @@
 			      {{ $name := print $song.artist " - " $song.title }}
 			      {{ $fil := exec "sb" (print $name " [" $song.length "]") }}🎶 **Music started!**
 			      {{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-			      {{ dbSet 20 "queue" $nq }}
 			   {{ else }}🤷‍♂️ **No songs in the queue**
 			   {{ end }}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
@@ -102,20 +101,18 @@
 				{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{end}}
 			{{else if eq $a "skip" "voteskip" "next" "s"}}
 			{{ cancelScheduledUniqueCC .CCID "music" }}
-				{{ if $q }}
-					{{ $song := index $q 1 }}
+				{{ if $nq }}
+					{{ $song := index $nq 0 }}
 					{{ $name := print $song.artist " - " $song.title }}
 					{{ $sil := execAdmin "sbclose" }}{{ sleep 1 }}
 					{{ $sil := exec "sb" (print $name " [" $song.length "]") }}⏭ **Skipped!**
 					{{ template "announce" (cslice 0 $song) }}
 					{{ scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1 }}
-					{{ dbSet 20 "queue" $q }}
+					{{ dbSet 20 "queue" $nq }}
 			   {{ else }}🤷‍♂️ **No more songs in the queue**
 			   {{ end }}
 			{{else if eq $a "shuffle"}}
 				{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}
-			{{else if eq $a "clear" "cl"}}
-				{{if $nq}}{{dbSet 20 "queue" (cslice (index $q 0))}}🗑 **Queue cleared!**{{else}}❌ **Nothing to clear!**{{end}}
 			{{end}}
 		{{end}}
 	{{else}}{{sendMessage nil $syntax}}{{end}}
