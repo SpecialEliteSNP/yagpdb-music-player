@@ -6,7 +6,7 @@
 		(cslice "playskip" (cslice "ps" "pskip" "playnow" "pn") "Skips the current song and plays the song you requested" "<query>")
 		(cslice "stop" (cslice "st" "end" "e") "Stops the music playback")
 		(cslice "search" (cslice "find") "Searches from the Soundboard for a song via your query and returns the top 10 results" "<query>")
-		(cslice "nowplaying" (cslice "np") "Shows what song Rythm is currently playing")
+		(cslice "nowplaying" (cslice "np") "Shows what song the bot is currently playing")
 		(cslice "grab" (cslice "save" "yoink") "Saves the current playing song to your Direct Messages")
 		(cslice "replay" (cslice) "Resets the progress of the current song")
 		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
