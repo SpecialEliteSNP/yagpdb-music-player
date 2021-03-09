@@ -90,6 +90,7 @@
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}
 			{{else if eq $a "stop" "st" "end" "e"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**
+				{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}
 				{{/* For when we have implemented the "requested by" */}}
 				{{/* {{printf "Artist: %s\n\nTitle: %s\n\nLength: %s\n\nRequested By: %s" .artist .title .length .reqby}} */}}
