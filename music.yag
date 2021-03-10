@@ -69,7 +69,14 @@
 			{{if not (reFind `^(n(?:owplaying|ext|p)|p(?:lay)?skip|p(?:laynow|n)|p(?:lay)?top|s(?:(?:huffl|av)e|tart|top|kip)?|r(?:andom|eplay)|clear|yoink|grab|end|cl|p[st]|e|r|b(egin)?)$` $a)}}{{sendMessage nil $syntax}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
 			{{else if eq $a "start" "begin" "b"}}
-				{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{cancelScheduledUniqueCC .CCID "music"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}🎶 **Music started!**{{scheduleUniqueCC .CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
+				{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}
+					{{cancelScheduledUniqueCC .CCID "music"}}
+					{{with index $q 0}}
+						{{$name := print .artist " - " .title}}
+						{{$sil := exec "sb" (print $name " [" .length "]")}}🎶 **Music started!**
+						{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}
+					{{ end }}
+				{{else}}🤷‍♂️ **No songs in the queue**{{end}}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "skip" "next" "s"}}
