@@ -80,9 +80,9 @@
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "skip" "next" "s"}}
-				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{if $nq}}{{$song := index $nq 0}}{{sleep 1}}{{$sil := exec "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "announce" (cslice $p 0 $song)}}{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}{{dbSet 20 "queue" $nq}}{{else}}{{sendMessage nil (cembed "title" "⏹ Music stopped" "description" "Reason:\n🏁 The queue has ended" "color" 16734296)}}{{end}}
+				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{$sil := exec "sb" (print .artist " - " .title " [" .length "]")}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "announce" (cslice $p 0 .)}}{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{sendMessage nil (cembed "title" "⏹ Music stopped" "description" "Reason:\n🏁 The queue has ended" "color" 16734296)}}{{end}}
 			{{else if eq $a "replay" "again"}}
-				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{end}}
+				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{end}}
 			{{else if eq $a "random" "r"}}
 				{{with index $songs (randInt (sub (len $songs) 1))}}✨ **Random song is...** `{{print .artist " - " .title}}`{{dbSet 20 "queue" ($q.Append .)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
