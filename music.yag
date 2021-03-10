@@ -12,7 +12,7 @@
 	{{$p := index . 0}}{{$c := index . 1}}{{$s := index . 2}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
 	{{if eq $c 0}}{{$t := "Nothing"}}{{if index . 3}}{{$t = (index . 3 0).title}}{{end}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`\n\nUp next: `" $t "`") "color" (randInt 16777217))}}
 	{{else}}
-		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 3)}}
+		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}{{$page := toInt (index . 3)}}
 		{{if and (gt $page 0) (le $page $pages)}}{{$footer = sdict "text" (print "Page " $page "/" $pages)}}{{$num := sub (mult $page 10) 10}}{{$start := $num}}{{$stop := add $num 10}}
 			{{range $i, $e := $s}}
 				{{- if and (ge $i $start) (lt $i $stop) -}}
