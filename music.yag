@@ -43,19 +43,8 @@
 
 {{if .ExecData}}
 	{{$emb := sdict "title" "⏹ Music stopped" "color" 16734296}}{{$reason := ""}}
-	{{if not $yagVC}}{{$reason = "❌ The bot is no longer in a voice channel"}}
-	{{else if not $usersVC}}{{$reason = "🥲 Everyone has abandoned me..."}}
-	{{else}}
-		{{if $nq}}
-			{{$song := index $nq 0}}
-			{{$sil := execAdmin "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}
-			{{template "announce" (cslice $p 0 $song $nq)}}
-			{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}
-		{{else}}
-			{{$reason = "🏁 The queue has ended"}}
-		{{end}}
-	{{end}}
-	{{dbSet 20 "queue" $nq}}
+	{{if not $yagVC}}{{$reason = "❌ The bot is no longer in a voice channel"}}{{else if not $usersVC}}{{$reason = "🥲 Everyone has abandoned me..."}}
+	{{else}}{{if $nq}}{{$song := index $nq 0}}{{$sil := execAdmin "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}{{$nnq := cslice}}{{- range $i, $e := $nq}}{{if ne $i 0}}{{$nnq = $nnq.Append $e}}{{end}}{{end}}{{template "announce" (cslice $p 0 $song $nnq)}}{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}{{else}}{{$reason = "🏁 The queue has ended"}}{{end}}{{end}}{{dbSet 20 "queue" $nq}}
 	{{if $reason}}{{$emb.Set "description" (print "Reason:\n" $reason)}}{{sendMessage nil (cembed $emb)}}{{end}}
 {{else}}
 	{{$syntax := cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-sb-music#the-command-actions-are-as-follows).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
