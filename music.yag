@@ -22,9 +22,7 @@
 		{{$t := "Nothing"}}{{if index . 3}}{{$t = (index . 3 0).title}}{{end}}{{dbDel 20 "skip"}}
 		{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`\n\nUp next: `" $t "`") "color" (randInt 16777217))}}
 	{{else}}
-		{{$d := ""}}
-		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}
-		{{$page := toInt (index . 3)}}
+		{{$d := ""}}{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}{{$page := toInt (index . 3)}}
 		{{if not $pages}}
 			{{$d = "❌ **Queue is empty!**"}}
 		{{else if and (gt $page 0) (le $page $pages)}}
@@ -52,11 +50,11 @@
 {{define "s"}}{{scheduleUniqueCC (index . 0) nil (div (toDuration (index . 1)) 1000000000) "music" 1}}{{end}}
 
 {{define "p"}}
-	{{$p := index . 0}}{{$c := index . 1}}{{$q := index . 2}}{{$nq := index . 3}}{{$arg := index . 5}}
+	{{$p := index . 0}}{{$c := index . 1}}{{$r := index . 2}}{{$q := index . 3}}{{$nq := index . 4}}{{$arg := index . 6}}
 	{{if $arg}}
 		{{$song := sdict}}
 		{{$len := 0}}
-		{{range index . 4}}
+		{{range index . 5}}
 			{{- $found := len (reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) .title) -}}
 			{{- if and $found (or (eq $len 0) (lt $found $len)) -}}
 				{{- $len = $found -}}
@@ -65,6 +63,7 @@
 		{{end}}
 		{{if $song}}
 			{{if eq $c 0}}
+				{{$song.Set "req" $r}}
 				{{dbSet 20 "queue" ($q.Append $song)}}
 				📃 **Queued `{{print $song.artist " - " $song.title}}`!**
 			{{else if eq $c 1}}
@@ -154,16 +153,19 @@
 			{{else}}
 				❌ **Please specify a search query!**
 			{{end}}
+		{{else if eq $a "grab" "save" "yoink"}}
+			{{with index $q 0}}{{sendDM (cembed "title" "🎶 Current song" "description" (print .artist " - " .title "\n\nLength: `" .length "`"))}}{{end}}📬 {{.User.Mention}}**, you've got mail!**
 		{{else if eq $a "play" "p"}}
-				{{template "p" (cslice $p 0 $q $nq $songs $arg)}}
+				{{template "p" (cslice $p 0 (or .Member.Nick .User.Username) $q $nq $songs $arg)}}
 		{{else if eq $a "playall" "pa"}}
-				{{dbSet 20 "queue" ($q.AppendSlice $songs)}}
-				📃 **Queued all songs I could find!**
+			{{range $songs}}{{.Set "req" (or .Member.Nick .User.Username)}}{{end }}
+			{{dbSet 20 "queue" ($q.AppendSlice $songs)}}
+			📃 **Queued all songs I could find!**
 		{{else if eq $a "queue" "q"}}
 			{{$t := $q}}{{if $yagVC}}{{$t = $nq}}{{end}}
 			{{template "a" (cslice $p 1 $t (or $arg 1))}}
 		{{else}}
-			{{if not (reFind `^(n(?:owplaying|p)|p(?:(?:lay)?ski|(?:lay)?to)p|p(?:laynow|n)|s(?:(?:huffl|av)e|t(?:art|op)|kip)?|r(?:andom|eplay)|clear|yoink|again|begin|grab|next|end|cl|p[st]|e|r|b)$` $a)}}
+			{{if not (reFind `^(n(?:owplaying|p)|(?:f(?:orce)?ski|p(?:layski|(?:lay)?to|ski))p|p(?:laynow|n)|s(?:huffle|t(?:art|op))|r(?:andom|eplay)|clear|begin|end|cl|pt|ps|fs|e|r|b)$` $a)}}
 				{{sendMessage nil $syntax}}
 			{{else if not $userVC}}
 				❌ **You're not in a voice channel!**
@@ -173,10 +175,7 @@
 				{{else if $q}}
 					{{template "c" .CCID}}
 					{{with index $q 0}}
-						{{template "b" .}}
-						{{sendMessage nil "🎶 **Music started!**"}}
-						{{template "a" (cslice $p 0 . $nnq)}}
-						{{template "s" (cslice $.CCID .length)}}
+						{{template "b" .}}{{sendMessage nil "🎶 **Music started!**"}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}
 					{{ end }}
 				{{else}}
 					🤷‍♂️ **No songs in the queue**
@@ -187,20 +186,18 @@
 					❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "forceskip" "fs" "fskip"}}
 				{{sendMessage nil "⏭ **Skipped!**"}}{{template "c" .CCID}}{{template "e"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{sendMessage nil (cembed "title" "⏹ Music stopped" "description" "Reason:\n🏁 The queue has ended" "color" 16734296)}}{{end}}
-			{{else if eq $a "replay" "again"}}
+			{{else if eq $a "replay"}}
 				{{template "c" .CCID}}{{template "e"}}{{with index $q 0}}{{sleep 1}}{{template "b" .}}↪ **Replaying `{{print .artist " - " .title}}`!**{{template "s" (cslice $.CCID .length)}}{{end}}
 			{{else if eq $a "random" "r"}}
 				{{with index $songs (randInt (sub (len $songs) 1))}}✨ **Random song is...** `{{print .artist " - " .title}}`{{dbSet 20 "queue" ($q.Append .)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
-				{{template "p" (cslice $p 1 $q $nq $songs $arg)}}
+				{{template "p" (cslice $p 1 (or .Member.Nick .User.Username) $q $nq $songs $arg)}}
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}
-				{{template "p" (cslice $p 2 $q $nq $songs $arg)}}
+				{{template "p" (cslice $p 2 (or .Member.Nick .User.Username) $q $nq $songs $arg)}}
 			{{else if eq $a "stop" "end" "e"}}
 				{{template "c" .CCID}}{{template "e"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}
 				{{template "a" (cslice $p 0 (index $q 0) $nq)}}
-			{{else if eq $a "grab" "save" "yoink"}}
-				{{with index $q 0}}{{sendDM (cembed "title" "🎶 Current song" "description" (print .artist " - " .title "\n\nLength: `" .length "`"))}}{{end}}📬 {{.User.Mention}}**, you've got mail!**
 			{{else if eq $a "shuffle"}}
 				{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}
 			{{else if eq $a "clear" "cl"}}
