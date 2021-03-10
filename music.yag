@@ -6,7 +6,7 @@
 {{$q := cslice}}{{with (dbGet 20 "queue").Value}}{{$q = $q.AppendSlice .}}{{end}}{{$nq := cslice}}{{- range $i, $e := $q}}{{if ne $i 0}}{{$nq = $nq.Append $e}}{{end}}{{end}}
 {{$e := execAdmin "prefix"}}{{$p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
 {{$yagVC := 0}}{{$userVC := 0}}{{range .Guild.VoiceStates}}{{if eq .UserID $botID}}{{$yagVC = .ChannelID}}{{else if eq .UserID $.User.ID}}{{$userVC = .ChannelID}}{{end}}{{end}}
-{{$usersVC := 0}}{{if $yagVC}}{{range .Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC = add $usersVC 1}}{{end}}{{end}}{{end}}
+{{$usersVC := -1}}{{if $yagVC}}{{range .Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC = add $usersVC 1}}{{end}}{{end}}{{end}}
 
 {{define "announce"}}
 	{{$p := index . 0}}{{$s := index . 2}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
