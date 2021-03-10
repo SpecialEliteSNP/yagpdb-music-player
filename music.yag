@@ -89,9 +89,9 @@
 			{{else if eq $a "random" "r"}}
 				{{with index $songs (randInt (sub (len $songs) 1))}}✨ **Random song is...** `{{print .artist " - " .title}}`{{dbSet 20 "queue" ($q.Append .)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}
-				{{template "play" (cslice $p 1 $q $songs $arg)}}
+				{{template "play" (cslice $p 1 $q $nq $songs $arg)}}
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}
-				{{template "play" (cslice $p 2 $q $songs $arg)}}
+				{{template "play" (cslice $p 2 $q $nq $songs $arg)}}
 			{{else if eq $a "stop" "end" "e"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}
