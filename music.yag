@@ -9,10 +9,10 @@
 {{$usersVC := -1}}{{if $yagVC}}{{range .Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC = add $usersVC 1}}{{end}}{{end}}{{end}}
 
 {{define "announce"}}
-	{{$p := index . 0}}{{$c := index . 1}}{{$q := index . 2}}{{$nq := index . 3}}{{$s := index . 4}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
-	{{if eq $c 0}}{{$t := "Nothing"}}{{if $nq}}{{$t = (index $nq 0).title}}{{end}}{{with index $q 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print .artist " - " .title "\n\nLength: `" .length "`\n\nUp next: `" $t "`") "color" (randInt 16777217))}}{{end}}
+	{{$p := index . 0}}{{$c := index . 1}}{{$nq := index . 2}}{{$s := index . 3}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
+	{{if eq $c 0}}{{$t := "Nothing"}}{{if $nq}}{{$t = (index $nq 0).title}}{{end}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`\n\nUp next: `" $t "`") "color" (randInt 16777217))}}
 	{{else}}
-		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 5)}}
+		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 4)}}
 		{{if and (gt $page 0) (le $page $pages)}}{{$footer = sdict "text" (print "Page " $page "/" $pages)}}{{$num := sub (mult $page 5) 5}}{{$start := $num}}{{$stop := add $num 5}}
 			{{range $i, $e := $s}}
 				{{- if and (ge $i $start) (lt $i $stop) -}}
@@ -36,7 +36,7 @@
 		{{if $song}}
 			{{if eq $c 0}}{{dbSet 20 "queue" ($q.Append $song)}}📃 **Queued `{{print $song.artist " - " $song.title}}`!**
 			{{else if eq $c 1}}{{dbSet 20 "queue" ((cslice (index $q 0) $song).AppendSlice $nq)}}📃 **Next up `{{print $song.artist " - " $song.title}}`!**
-			{{else}}{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{sleep 1}}{{$sil := exec "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "announce" (cslice $p 0 $q $nq $song)}}{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}{{dbSet 20 "queue" ((cslice $song).AppendSlice $nq)}}{{end}}
+			{{else}}{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{sleep 1}}{{$sil := exec "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "announce" (cslice $p 0 $nq $song)}}{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}{{dbSet 20 "queue" ((cslice $song).AppendSlice $nq)}}{{end}}
 		{{else}}❌ **Couldn't find `{{$arg}}`!**{{end}}
 	{{else}}❌ **Please specify a song!**{{end}}
 {{end}}
@@ -45,7 +45,17 @@
 	{{$emb := sdict "title" "⏹ Music stopped" "color" 16734296}}{{$reason := ""}}
 	{{if not $yagVC}}{{$reason = "❌ The bot is no longer in a voice channel"}}
 	{{else if not $usersVC}}{{$reason = "🥲 Everyone has abandoned me..."}}
-	{{else}}{{if $nq}}{{$song := index $nq 0}}{{$sil := execAdmin "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}{{template "announce" (cslice $p 0 $q $nq $song)}}{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}{{else}}{{$reason = "🏁 The queue has ended"}}{{end}}{{end}}{{dbSet 20 "queue" $nq}}
+	{{else}}
+		{{if $nq}}
+			{{$song := index $nq 0}}
+			{{$sil := execAdmin "sb" (print $song.artist " - " $song.title " [" $song.length "]")}}
+			{{template "announce" (cslice $p 0 $nq $song)}}
+			{{scheduleUniqueCC .CCID nil (div (toDuration $song.length) 1000000000) "music" 1}}
+		{{else}}
+			{{$reason = "🏁 The queue has ended"}}
+		{{end}}
+	{{end}}
+	{{dbSet 20 "queue" $nq}}
 	{{if $reason}}{{$emb.Set "description" (print "Reason:\n" $reason)}}{{sendMessage nil (cembed $emb)}}{{end}}
 {{else}}
 	{{$syntax := cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-sb-music#the-command-actions-are-as-follows).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
@@ -56,7 +66,7 @@
 		{{if eq $a "help" "h"}}
 			{{with $helpCC}}{{$t := "all"}}{{if $arg}}{{$t = $arg}}{{end}}{{execCC . nil 0 $t}}{{else}}❌ **Help CCID is not set!**{{end}}
 		{{else if eq $a "list" "l"}}
-			{{template "announce" (cslice $p 2 $q $songs (or $arg 1))}}
+			{{template "announce" (cslice $p 2 $nq $songs (or $arg 1))}}
 		{{else if eq $a "search" "find"}}
 			{{if $arg}}{{$found := cslice}}{{range $i, $e := $songs}}{{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title -}}{{- $found = $found.Append (sdict "artist" $e.artist "length" $e.length "title" $e.title "number" $i) -}}{{- end -}}{{end}}{{with $found}}{{$emb := sdict "title" "🎵 Songs found"}}{{$display := ""}}{{range $i, $e := .}}{{if lt $i 5}}{{$display = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $display (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length}}{{end}}{{end}}{{if ge (len $found) 5}}{{$display = print $display "\n\n\n**Only showing the first 5 results**"}}{{end}}{{$emb.Set "description" $display}}{{sendMessage nil (cembed $emb)}}{{else}}❌ **No songs found with `{{$arg}}`!**{{end}}{{else}}❌ **Please specify a search query!**{{end}}
 		{{else if eq $a "play" "p"}}
@@ -64,16 +74,16 @@
 		{{else if eq $a "playall" "pa"}}
 			{{dbSet 20 "queue" ($q.AppendSlice $songs)}}📃 **Queued all songs I could find!**
 		{{else if eq $a "queue" "q"}}
-			{{$t := $q}}{{if $yagVC}}{{$t = $nq}}{{end}}{{template "announce" (cslice $p 1 $q $nq $t (or $arg 1))}}
+			{{$t := $q}}{{if $yagVC}}{{$t = $nq}}{{end}}{{template "announce" (cslice $p 1 $nq $t (or $arg 1))}}
 		{{else}}
 			{{if not (reFind `^(n(?:owplaying|p)|p(?:(?:lay)?ski|(?:lay)?to)p|p(?:laynow|n)|s(?:(?:huffl|av)e|t(?:art|op)|kip)?|r(?:andom|eplay)|clear|yoink|again|begin|grab|next|end|cl|p[st]|e|r|b)$` $a)}}{{sendMessage nil $syntax}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
 			{{else if eq $a "start" "begin" "b"}}
-				{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{cancelScheduledUniqueCC .CCID "music"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}{{sendMessage nil "🎶 **Music started!**"}}{{template "announce" (cslice $p 0 $q $nq .)}}{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
+				{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{cancelScheduledUniqueCC .CCID "music"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{$sil := exec "sb" (print $name " [" .length "]")}}{{sendMessage nil "🎶 **Music started!**"}}{{template "announce" (cslice $p 0 $nq .)}}{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "skip" "next" "s"}}
-				{{sendMessage nil "⏭ **Skipped!**"}}{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{$sil := exec "sb" (print .artist " - " .title " [" .length "]")}}{{template "announce" (cslice $p 0 $q $nq .)}}{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{sendMessage nil (cembed "title" "⏹ Music stopped" "description" "Reason:\n🏁 The queue has ended" "color" 16734296)}}{{end}}
+				{{sendMessage nil "⏭ **Skipped!**"}}{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{$sil := exec "sb" (print .artist " - " .title " [" .length "]")}}{{template "announce" (cslice $p 0 $nq .)}}{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{sendMessage nil (cembed "title" "⏹ Music stopped" "description" "Reason:\n🏁 The queue has ended" "color" 16734296)}}{{end}}
 			{{else if eq $a "replay" "again"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}{{with index $q 0}}{{$name := print .artist " - " .title}}{{sleep 1}}{{$sil := exec "sb" (print $name " [" .length "]")}}↪ **Replaying `{{$name}}`!**{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}{{end}}
 			{{else if eq $a "random" "r"}}
@@ -85,7 +95,7 @@
 			{{else if eq $a "stop" "end" "e"}}
 				{{cancelScheduledUniqueCC .CCID "music"}}{{$sil := execAdmin "sbclose"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}
-				{{template "announce" (cslice $p 0 $q $nq (index $q 0))}}
+				{{template "announce" (cslice $p 0 $nq (index $q 0))}}
 			{{else if eq $a "grab" "save" "yoink"}}
 				{{with index $q 0}}{{sendTemplateDM "announce" (cslice $p 0 $q $nq (index $q 0))}}{{end}}📬 {{.User.Mention}}**, you've got mail!**{{deleteResponse 5}}
 			{{else if eq $a "shuffle"}}
