@@ -25,15 +25,15 @@
 		{{$d := ""}}
 		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}
 		{{$page := toInt (index . 3)}}
-		{{if and (gt $page 0) (le $page $pages)}}
+		{{if not $pages}}
+			{{$d = "❌ **Queue is empty!**"}}
+		{{else if and (gt $page 0) (le $page $pages)}}
 			{{$n := sub (mult $page 10) 10}}{{$b := $n}}
 			{{range $i, $e := $s}}
 				{{- if and (ge $i $b) (lt $i (add $b 10)) -}}
 					{{- $n = add $n 1 -}}
 					{{- $d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length -}}
 				{{- end -}}
-			{{else}}
-				{{$d = "❌ **Queue is empty!**"}}
 			{{end}}
 			{{$title := "📃 Queue"}}{{if ne $c 1}}{{$title = "🎵 Available songs"}}{{end}}
 			{{sendMessage nil (cembed "title" $title "description" $d "color" 3324667 "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" (sdict "text" (print "Page " $page "/" $pages)))}}
