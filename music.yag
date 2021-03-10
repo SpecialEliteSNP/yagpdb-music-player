@@ -10,7 +10,7 @@
 
 {{define "announce"}}
 	{{$p := index . 0}}{{$s := index . 2}}{{$title := "📃 Queue"}}{{$description := ""}}{{$footer := sdict}}
-	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`"))}}
+	{{if eq (index . 1) 0}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (print $s.artist " - " $s.title "\n\nLength: `" $s.length "`") "color" (randInt 16777217))}}
 	{{else}}
 		{{$pages := toInt (roundCeil (div (toFloat (len $s)) 5))}}{{$page := toInt (index . 3)}}
 		{{if and (gt $page 0) (le $page $pages)}}{{$footer = sdict "text" (print "Page " $page "/" $pages)}}{{$num := sub (mult $page 5) 5}}{{$start := $num}}{{$stop := add $num 5}}
@@ -73,7 +73,7 @@
 					{{cancelScheduledUniqueCC .CCID "music"}}
 					{{with index $q 0}}
 						{{$name := print .artist " - " .title}}
-						{{$sil := exec "sb" (print $name " [" .length "]")}}🎶 **Music started!**
+						{{$sil := exec "sb" (print $name " [" .length "]")}}🎶 **Music started!**{{template "announce" (cslice $p 0 .)}}
 						{{scheduleUniqueCC $.CCID nil (div (toDuration .length) 1000000000) "music" 1}}
 					{{ end }}
 				{{else}}🤷‍♂️ **No songs in the queue**{{end}}
