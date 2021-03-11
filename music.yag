@@ -40,7 +40,7 @@
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}{{template "p" (cslice $p 2 .User.ID $q $nq $songs $arg)}}
 			{{else if eq $a "stop" "end" "e"}}{{template "c" .CCID}}{{template "e"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}{{template "a" (cslice $p 0 (index $q 0) $nq)}}
-			{{else if eq $a "remove" "rm"}}{{$ni := "❌ **Please input a number!**"}}{{if $arg}}{{range split $arg " "}}{{}}{{end}}{{else}}{{$ni}}{{end}}
+			{{else if eq $a "remove" "rm"}}{{$ni := "❌ **Please input a number!**"}}{{if $arg}}{{range split $arg " "}}{{end}}{{else}}{{$ni}}{{end}}
 			{{else if eq $a "shuffle"}}{{if $h}}{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}{{else}}{{$np}}{{end}}
 			{{end}}
 		{{end}}
