@@ -29,7 +29,8 @@
 			{{range $i, $e := $s}}
 				{{- if and (ge $i $b) (lt $i (add $b 10)) -}}
 					{{- $n = add $n 1 -}}
-					{{- $d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]** <@%d>" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $e.req -}}
+					{{$req:=""}}{{- with $e.req }}{{$req = print "<@" $e.req ">"}}{{end}}
+					{{- $d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]** %s" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $req -}}
 				{{- end -}}
 			{{end}}
 			{{$title := "📃 Queue"}}{{if ne $c 1}}{{$title = "🎵 Available songs"}}{{end}}
