@@ -4,7 +4,20 @@
 {{$e:=execAdmin "prefix"}}{{$p:=reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
 {{$yagVC:=0}}{{$userVC:=0}}{{$usersVC:=cslice}}{{range .Guild.VoiceStates}}{{if eq .UserID $botID}}{{$yagVC =.ChannelID}}{{range $.Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC =$usersVC.Append .}}{{end}}{{end}}{{else if eq .UserID $.User.ID}}{{$userVC =.ChannelID}}{{end}}{{end}}
 
-{{define "a"}}{{$p:=index . 0}}{{$c:=index . 1}}{{$s:=index . 2}}{{if eq $c 0}}{{$t:="Nothing"}}{{if index . 3}}{{$t =(index . 3 0).title}}{{end}}{{dbDel 20 "skip"}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (printf "%s - %s\n\nLength: `%s`\n\nRequested By: <@%d>\n\nUp next: `%s`" $s.artist $s.title $s.length $s.req $t ) "color" (randInt 16777217))}}{{else}}{{$d:=""}}{{$pages:=toInt (roundCeil (div (toFloat (len $s)) 10))}}{{$page:=toInt (index . 3)}}{{if not (or $s $pages)}}❌ **Queue is empty!**{{else if and (gt $page 0) (le $page $pages)}}{{$n:=sub (mult $page 10) 10}}{{$b:=$n}}{{$l:=currentTime}}{{range $i,$e:=$s}}{{- if and (ge $i $b) (lt $i (add $b 10)) -}}{{- $n =add $n 1 -}}{{- $l =$l.Add (toDuration $e.length) -}}{{$r:=""}}{{- with $e.req -}}{{- $r =print " <@" . ">" -}}{{- end -}}{{- $d =printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**%s" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $r -}}{{- end -}}{{end}}{{$title:="🎵 Available songs"}}{{$footer:=print "Page " $page "/" $pages}}{{if eq $c 1}}{{$title ="📃 Queue"}}{{$footer =print $footer " • " (len $s) " songs • " (($l.Sub currentTime).Round (index . 4))}}{{end}}{{sendMessage nil (cembed "title" $title "description" $d "color" 3324667 "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" (sdict "text" $footer))}}{{else}}❌ **That page doesn't exist!**{{end}}{{end}}{{end}}
+{{define "a"}}{{$p:=index . 0}}{{$c:=index . 1}}{{$s:=index . 2}}{{if eq $c 0}}{{$t:="Nothing"}}{{if index . 3}}{{$t =(index . 3 0).title}}{{end}}{{dbDel 20 "skip"}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (printf "%s - %s\n\nLength: `%s`\n\nRequested By: <@%d>\n\nUp next: `%s`" $s.artist $s.title $s.length $s.req $t ) "color" (randInt 16777217))}}{{else}}{{$d:=""}}
+		{{$pages:=toInt (roundCeil (div (toFloat (len $s)) 10))}}
+		{{$page:=toInt (index . 3)}}
+		{{if not (or $s $pages)}}❌ **Queue is empty!**
+		{{else if and (gt $page 0) (le $page $pages)}}
+			{{$n:=sub (mult $page 10) 10}}{{$b:=$n}}{{$l:=currentTime}}
+			{{range $i,$e:=$s}}
+			{{- $l =$l.Add (toDuration $e.length) -}}
+			{{- if and (ge $i $b) (lt $i (add $b 10)) -}}
+				{{- $n =add $n 1 -}}{{$r:=""}}{{- with $e.req -}}{{- $r =print " <@" . ">" -}}{{- end -}}
+				{{- $d =printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**%s" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $r -}}
+			{{- end -}}
+		{{end}}
+		{{$title:="🎵 Available songs"}}{{$footer:=print "Page " $page "/" $pages}}{{if eq $c 1}}{{$title ="📃 Queue"}}{{$footer =print $footer " • " (len $s) " songs • " (($l.Sub currentTime).Round (index . 4))}}{{end}}{{sendMessage nil (cembed "title" $title "description" $d "color" 3324667 "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" (sdict "text" $footer))}}{{else}}❌ **That page doesn't exist!**{{end}}{{end}}{{end}}
 {{define "b"}}{{$t:=exec "sb" (print .artist " - " .title " [" .length "]")}}{{end}}
 {{define "e"}}{{$t:=execAdmin "sbclose"}}{{dbDel 20 "skip"}}{{end}}
 {{define "c"}}{{cancelScheduledUniqueCC . "music"}}{{end}}
@@ -27,6 +40,7 @@
 		{{else if eq $a "playall" "pa"}}{{if $h}}{{range $songs}}{{.Set "req" $.User.ID}}{{end}}{{dbSet 20 "queue" ($q.AppendSlice $songs)}}📃 **Queued all songs I could find!**{{else}}{{$np}}{{end}}
 		{{else if eq $a "random" "r"}}{{with index $songs (randInt (sub (len $songs) 1))}}{{.Set "req" $.User.ID}}✨ **Random song is...** `{{print .artist " - " .title}}`{{dbSet 20 "queue" ($q.Append .)}}{{end}}
 		{{else if eq $a "queue" "q"}}{{$t:=$q}}{{if $yagVC}}{{$q =$nq}}{{end}}{{template "a" (cslice $p 1 $t (or $arg 1) .TimeSecond)}}
+		{{else if eq $a "remove" "rm"}}{{if $h}}{{if $arg}}{{$t:=$q}}{{$f:=cslice (index $q 0)}}{{if $yagVC}}{{$t =$nq}}{{end}}{{$nnq:=cslice}}{{$nr:=cslice}}{{$c:=0}}{{range split $arg " "}}{{with toInt .}}{{$nr =$nr.Append .}}{{end}}{{end}}{{range $i,$e:=$t}}{{if in $nr (add $i 1)}}{{$c =add $c 1}}{{else}}{{$nnq =$nnq.Append $e}}{{end}}{{end}}🗑 **Removed {{$c}} songs!**{{if $yagVC}}{{dbSet 20 "queue" ($f.AppendSlice $nnq)}}{{else}}{{dbSet 20 "queue" $nnq}}{{end}}{{else}}❌ **Please input a number!**{{end}}{{else}}{{$np}}{{end}}
 		{{else if eq $a "clear" "cl"}}{{if $h}}{{$nc:="❌ **Nothing cleared!**"}}{{$f:=cslice (index $q 0)}}{{if $arg}}{{$u:=0}}{{with .Message.Mentions}}{{$u =(index . 0).ID}}{{end}}{{with or $u (toInt $arg)}}{{$u =.}}{{$t:=$q}}{{if $yagVC}}{{$t =$nq}}{{end}}{{$nnq:=cslice}}{{range $t}}{{if ne .req $u}}{{$nnq =$nnq.Append .}}{{end}}{{end}}{{if lt (len $nnq) (len $t)}}{{if not $yagVC}}{{$f =cslice}}{{end}}{{dbSet 20 "queue" ($f.AppendSlice $nnq)}}🗑 **Queue cleared for <@{{$u}}>!**{{else}}{{$nc}}{{end}}{{end}}{{else}}{{$qc:="🗑 **Queue cleared!**"}}{{if $yagVC}}{{if $nq}}{{dbSet 20 "queue" $f}}{{$qc}}{{else}}{{$nc}}{{end}}{{else}}{{dbDel 20 "queue"}}{{$qc}}{{end}}{{end}}{{else}}{{$np}}{{end}}
 		{{else}}
 			{{if not (reFind `^(n(?:owplaying|p)|(?:f(?:orce)?ski|p(?:layski|(?:lay)?to|ski))p|p(?:laynow|n)|s(?:huffle|t(?:art|op))|r(?:andom|eplay|emove)|begin|end|pt|ps|fs|e|rm?|b)$` $a)}}{{sendMessage nil $syntax}}
@@ -40,7 +54,6 @@
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}{{template "p" (cslice $p 2 .User.ID $q $nq $songs $arg)}}
 			{{else if eq $a "stop" "end" "e"}}{{template "c" .CCID}}{{template "e"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
 			{{else if eq $a "nowplaying" "np"}}{{template "a" (cslice $p 0 (index $q 0) $nq)}}
-			{{else if eq $a "remove" "rm"}}{{if $h}}{{if $arg}}{{$t:=$q}}{{$f:=cslice (index $q 0)}}{{if $yagVC}}{{$t =$nq}}{{end}}{{$nnq:=cslice}}{{$nr:=cslice}}{{$c:=0}}{{range split $arg " "}}{{with toInt .}}{{$nr =$nr.Append .}}{{end}}{{end}}{{range $i,$e:=$t}}{{if in $nr (add $i 1)}}{{$c =add $c 1}}{{else}}{{$nnq =$nnq.Append $e}}{{end}}{{end}}🗑 **Removed {{$c}} songs!**{{if $yagVC}}{{dbSet 20 "queue" ($f.AppendSlice $nnq)}}{{else}}{{dbSet 20 "queue" $nnq}}{{end}}{{else}}❌ **Please input a number!**{{end}}{{else}}{{$np}}{{end}}
 			{{else if eq $a "shuffle"}}{{if $h}}{{if $nq}}{{dbSet 20 "queue" (shuffle $nq)}}🔀 **Shuffled the queue!**{{else}}❌ **Nothing to shuffle!**{{end}}{{else}}{{$np}}{{end}}
 			{{end}}
 		{{end}}
