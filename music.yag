@@ -1,4 +1,4 @@
-{{$helpCC:=8}}{{$botID:=204255221017214977}}
+{{$optionsCC:=8}}{{$botID:=204255221017214977}}
 {{$h:= false}}{{range .Member.Roles}}{{if in (cslice 818943711508693004 757760951620468817 723187777465876543) .}}{{$h = true}}{{end}}{{end}}{{$np := "❌ **You need to be a DJ to do this!**"}}
 {{$q := cslice}}{{with (dbGet 20 "queue").Value}}{{$q = $q.AppendSlice .}}{{end}}{{$nq := cslice}}{{$nnq := cslice}}{{- range $i, $e := $q}}{{if $i}}{{$nq = $nq.Append $e}}{{end}}{{if gt $i 1}}{{$nnq = $nnq.Append $e}}{{end}}{{end}}
 {{$e := execAdmin "prefix"}}{{$p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
@@ -19,7 +19,7 @@
 		{{$arg := ""}}{{range $i, $e := .CmdArgs}}{{if $i}}{{$arg = print $arg " " $e}}{{end}}{{end}}{{if $arg}}{{$arg = slice $arg 1}}{{end}}{{$sb := execAdmin "sb"}}{{$songs := cslice}}
 		{{range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}{{$songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}{{end}}{{end}}
 		{{$a := lower (index .Args 1)}}
-		{{if eq $a "help" "h"}}{{with $helpCC}}{{$t := "all"}}{{if $arg}}{{$t = $arg}}{{end}}{{execCC . nil 0 $t}}{{else}}❌ **Help CCID is not set!**{{end}}
+		{{if eq $a "help" "h"}}{{with $optionsCC}}{{$t := "all"}}{{if $arg}}{{$t = $arg}}{{end}}{{execCC . nil 0 $t}}{{else}}❌ **Options CCID is not set!**{{end}}
 		{{else if eq $a "list" "l"}}{{template "a" (cslice $p 2 $songs (or $arg 1))}}
 		{{else if eq $a "search" "find"}}{{if $arg}}{{$found := cslice}}{{range $i, $e := $songs}}{{- if reFind (print `(?i)` ((split (reReplace `[[\]\\.?^${}()|*+]` $arg `\$0`) "`"|joinStr `\x60`))) $e.title -}}{{- $found = $found.Append (sdict "artist" $e.artist "length" $e.length "title" $e.title "number" $i) -}}{{- end -}}{{end}}{{with $found}}{{$emb := sdict "title" "🎵 Songs found"}}{{$d := ""}}{{range $i, $e := .}}{{if lt $i 10}}{{$d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]**" $d (add $e.number 1) $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length}}{{end}}{{end}}{{if ge (len $found) 10}}{{$d = print $d "\n\n\n**Only showing the first 10 results**"}}{{end}}{{$emb.Set "description" $d}}{{sendMessage nil (cembed $emb)}}{{else}}❌ **No songs found with `{{$arg}}`!**{{end}}{{else}}❌ **Please specify a search query!**{{end}}
 		{{else if eq $a "grab" "save" "yoink"}}{{with index $q 0}}{{sendDM (cembed "title" "🎶 Current song" "description" (print .artist " - " .title "\n\nLength: `" .length "`"))}}{{end}}📬 {{.User.Mention}}**, you've got mail!**
