@@ -1,5 +1,5 @@
 {{$helpCC:=8}}{{$botID:=204255221017214977}}
-{{$h:= false}}{{range .Member.Roles}}{{if in (cslice 818943711508693004 757760951620468817 723187777465876543) .}}{{$h = true}}{{end}}{{end}}{{$np := "❌ You need to be a DJ to do this!"}}
+{{$h:= false}}{{range .Member.Roles}}{{if in (cslice 818943711508693004 757760951620468817 723187777465876543) .}}{{$h = true}}{{end}}{{end}}{{$np := "❌ **You need to be a DJ to do this!**"}}
 {{$q := cslice}}{{with (dbGet 20 "queue").Value}}{{$q = $q.AppendSlice .}}{{end}}{{$nq := cslice}}{{$nnq := cslice}}{{- range $i, $e := $q}}{{if $i}}{{$nq = $nq.Append $e}}{{end}}{{if gt $i 1}}{{$nnq = $nnq.Append $e}}{{end}}{{end}}
 {{$e := execAdmin "prefix"}}{{$p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
 {{$yagVC := 0}}{{$userVC := 0}}{{$usersVC := cslice}}{{range .Guild.VoiceStates}}{{if eq .UserID $botID}}{{$yagVC = .ChannelID}}{{range $.Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC = $usersVC.Append .}}{{end}}{{end}}{{else if eq .UserID $.User.ID}}{{$userVC = .ChannelID}}{{end}}{{end}}
