@@ -31,7 +31,7 @@
 		{{else}}
 			{{if not (reFind `^(n(?:owplaying|p)|(?:f(?:orce)?ski|p(?:layski|(?:lay)?to|ski))p|p(?:laynow|n)|s(?:huffle|t(?:art|op))|r(?:andom|eplay|emove)|begin|end|pt|ps|fs|e|rm?|b)$` $a)}}{{sendMessage nil $syntax}}
 			{{else if not $userVC}}❌ **You're not in a voice channel!**
-			{{else if eq $a "start" "begin" "b"}}{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{template "c" .CCID}}{{with index $q 0}}{{template "b" .}}{{sendMessage nil "🎶 **Music started!**"}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
+			{{else if eq $a "start" "begin" "b"}}{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{template "c" .CCID}}{{with index $q 0}}{{template "b" .}}{{sendMessage nil "🎶 **Music started!**"}}{{template "a" (cslice $p 0 . $nq)}}{{template "s" (cslice $.CCID .length)}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "forceskip" "fs" "fskip"}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "c" .CCID}}{{template "e"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{execCC .CCID nil 0 1}}{{end}}
