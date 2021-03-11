@@ -54,7 +54,7 @@
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
 			{{else if eq $a "forceskip" "fs" "fskip"}}{{sendMessage nil "⏭ **Skipped!**"}}{{template "c" .CCID}}{{template "e"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbSet 20 "queue" $nq}}{{else}}{{execCC .CCID nil 0 1}}{{end}}
-			{{else if eq $a "replay"}}{{template "c" .CCID}}{{template "e"}}{{with index $q 0}}{{sleep 1}}{{template "b" .}}↪ **Replaying `{{print .artist " - " .title}}`!**{{template "s" (cslice $.CCID .length)}}{{end}}
+			{{else if eq $a "replay"}}{{template "c" .CCID}}{{template "e"}}{{with index $q 0}}{{.Set "req" $.User.ID}}{{dbSet 20 "queue" $q}}{{sleep 1}}{{template "b" .}}↪ **Replaying `{{print .artist " - " .title}}`!**{{template "s" (cslice $.CCID .length)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}{{template "p" (cslice $p 1 .User.ID $q $nq $songs $arg)}}
 			{{else if eq $a "playskip" "ps" "pskip" "playnow" "pn"}}{{template "p" (cslice $p 2 .User.ID $q $nq $songs $arg)}}
 			{{else if eq $a "stop" "end" "e"}}{{template "c" .CCID}}{{template "e"}}⏹ **Music stopped!**{{dbSet 20 "queue" $nq}}
