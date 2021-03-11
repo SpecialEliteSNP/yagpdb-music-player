@@ -4,26 +4,7 @@
 {{$e := execAdmin "prefix"}}{{$p := reReplace `[\.\[\]\-\?\!\\\*\{\}\(\)\|\+\$\^]` (slice $e (add 15 (len (str .Guild.ID))) (sub (len $e) 1)) `\$0`}}
 {{$yagVC := 0}}{{$userVC := 0}}{{$usersVC := cslice}}{{range .Guild.VoiceStates}}{{if eq .UserID $botID}}{{$yagVC = .ChannelID}}{{range $.Guild.VoiceStates}}{{if eq .ChannelID $yagVC}}{{$usersVC = $usersVC.Append .}}{{end}}{{end}}{{else if eq .UserID $.User.ID}}{{$userVC = .ChannelID}}{{end}}{{end}}
 
-{{define "a"}}
-	{{$p := index . 0}}{{$c := index . 1}}{{$s := index . 2}}
-	{{if eq $c 0}}
-		{{$t := "Nothing"}}{{if index . 3}}{{$t = (index . 3 0).title}}{{end}}{{dbDel 20 "skip"}}
-		{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (printf "%s - %s\n\nLength: `%s`\n\nRequested By: <@%d>\n\nUp next: `%s`" $s.artist $s.title $s.length $s.req $t ) "color" (randInt 16777217))}}
-	{{else}}
-		{{$d := ""}}{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}{{$page := toInt (index . 3)}}
-		{{if not (or $s $pages)}}❌ **Queue is empty!**
-		{{else if and (gt $page 0) (le $page $pages)}}
-			{{$n := sub (mult $page 10) 10}}{{$b := $n}}
-			{{range $i, $e := $s}}
-				{{- if and (ge $i $b) (lt $i (add $b 10)) -}}
-					{{- $n = add $n 1 -}}
-					{{$req:=""}}{{- with $e.req }}{{$req = print "<@" $e.req ">"}}{{end}}
-					{{- $d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]** %s" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $req -}}
-				{{- end -}}
-			{{end}}
-			{{$title := "📃 Queue"}}{{if ne $c 1}}{{$title = "🎵 Available songs"}}{{end}}
-			{{sendMessage nil (cembed "title" $title "description" $d "color" 3324667 "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" (sdict "text" (print "Page " $page "/" $pages)))}}
-		{{else}}❌ **That page doesn't exist!**{{end}}{{end}}{{end}}
+{{define "a"}}{{$p := index . 0}}{{$c := index . 1}}{{$s := index . 2}}{{if eq $c 0}}{{$t := "Nothing"}}{{if index . 3}}{{$t = (index . 3 0).title}}{{end}}{{dbDel 20 "skip"}}{{sendMessage nil (cembed "title" "🎶 Now playing" "description" (printf "%s - %s\n\nLength: `%s`\n\nRequested By: <@%d>\n\nUp next: `%s`" $s.artist $s.title $s.length $s.req $t ) "color" (randInt 16777217))}}{{else}}{{$d := ""}}{{$pages := toInt (roundCeil (div (toFloat (len $s)) 10))}}{{$page := toInt (index . 3)}}{{if not (or $s $pages)}}❌ **Queue is empty!**{{else if and (gt $page 0) (le $page $pages)}}{{$n := sub (mult $page 10) 10}}{{$b := $n}}{{range $i, $e := $s}}{{- if and (ge $i $b) (lt $i (add $b 10)) -}}{{- $n = add $n 1 -}}{{$req:=""}}{{- with $e.req }}{{$req = print "<@" $e.req ">"}}{{end}}{{- $d = printf "%s\n\n`%d.` [%s - %s](https://music.youtube.com/search?q=%s+%s) **[%s]** %s" $d $n $e.artist $e.title (urlquery (lower $e.title)) (urlquery (lower $e.artist)) $e.length $req -}}{{- end -}}{{end}}{{$title := "📃 Queue"}}{{if ne $c 1}}{{$title = "🎵 Available songs"}}{{end}}{{sendMessage nil (cembed "title" $title "description" $d "color" 3324667 "thumbnail" (sdict "url" "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-google-136/1f3b5.png") "footer" (sdict "text" (print "Page " $page "/" $pages)))}}{{else}}❌ **That page doesn't exist!**{{end}}{{end}}{{end}}
 {{define "b"}}{{$t := exec "sb" (print .artist " - " .title " [" .length "]")}}{{end}}
 {{define "e"}}{{$t := execAdmin "sbclose"}}{{dbDel 20 "skip"}}{{end}}
 {{define "c"}}{{cancelScheduledUniqueCC . "music"}}{{end}}
@@ -33,7 +14,7 @@
 {{if .ExecData}}
 	{{$emb := sdict "title" "⏹ Music stopped" "color" 16734296}}{{$r := ""}}{{if le (len $usersVC) 1}}{{$r = "🌐 Disconnected"}}{{else if $nq}}{{with index $nq 0}}{{$sil := execAdmin "sb" (print .artist " - " .title " [" .length "]")}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{else}}{{$r = "🏁 The queue has ended"}}{{end}}{{dbSet 20 "queue" $nq}}{{if $r}}{{$emb.Set "description" (print "Reason:\n" $r)}}{{sendMessage nil (cembed $emb)}}{{end}}
 {{else}}
-	{{$syntax := cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-sb-music#the-command-actions-are-as-follows).\n\nYou can also do: " $p "music help <action>\n\nNOTE: You may not be able to use this command.") "color" 16734296}}
+	{{$syntax := cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-sb-music#the-command-actions-are-as-follows).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
 	{{if gt (len .Args) 1}}
 		{{$arg := ""}}{{range $i, $e := .CmdArgs}}{{if $i}}{{$arg = print $arg " " $e}}{{end}}{{end}}{{if $arg}}{{$arg = slice $arg 1}}{{end}}{{$sb := execAdmin "sb"}}{{$songs := cslice}}
 		{{range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}{{$songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}{{end}}{{end}}
