@@ -1,11 +1,9 @@
 {{$commands2 := cslice
 		(cslice "loop" (cslice "repeat") "Toggles looping for the current playing song")
 		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
-		(cslice "forceskip" (cslice "fs" "fskip") "Skips the current playing song immediately" "[number]")
 
 		(cslice "loopqueue" (cslice "qloop" "lq" "queueloop") "Toggles looping for the whole queue")
 		(cslice "move" (cslice "m" "mv") "Moves a certain song to a chosen (or first) position in the queue" "<old positon> [new position]")
 		(cslice "skipto" (cslice "st") "Skips to a certain position in the queue" "<position>")
-		(cslice "remove" (cslice "rm") "Removes a certain entry from the queue" "<number(s)>")
 		(cslice "leavecleanup" (cslice "lc") "Removes absent user's songs from the queue")
 		(cslice "removedupes" (cslice "rmd" "rd" "drm") "Removes duplicate songs from the queue")}}
