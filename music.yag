@@ -84,35 +84,13 @@
 {{end}}
 
 {{if .ExecData}}
-	{{$emb := sdict "title" "⏹ Music stopped" "color" 16734296}}{{$r := ""}}
-	{{if not $yagVC}}
-		{{$r = "❌ The bot is no longer in a voice channel"}}
-	{{else if not $usersVC}}
-		{{$r = "🥲 Everyone has abandoned me..."}}
-	{{else}}
-		{{if $nq}}
-			{{with index $nq 0}}
-				{{$sil := execAdmin "sb" (print .artist " - " .title " [" .length "]")}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}
-			{{end}}
-		{{else}}
-			{{$r = "🏁 The queue has ended"}}
-		{{end}}
-	{{end}}
-	{{dbSet 20 "queue" $nq}}
-	{{if $r}}{{$emb.Set "description" (print "Reason:\n" $r)}}{{sendMessage nil (cembed $emb)}}{{end}}
+	{{$emb := sdict "title" "⏹ Music stopped" "color" 16734296}}{{$r := ""}}{{if not $yagVC}}{{$r = "❌ The bot is no longer in a voice channel"}}{{else if not $usersVC}}{{$r = "🥲 Everyone has abandoned me..."}}{{else}}{{if $nq}}{{with index $nq 0}}{{$sil := execAdmin "sb" (print .artist " - " .title " [" .length "]")}}{{template "a" (cslice $p 0 . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{else}}{{$r = "🏁 The queue has ended"}}{{end}}{{end}}{{dbSet 20 "queue" $nq}}{{if $r}}{{$emb.Set "description" (print "Reason:\n" $r)}}{{sendMessage nil (cembed $emb)}}{{end}}
 {{else}}
 	{{$syntax := cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-sb-music#the-command-actions-are-as-follows).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
 	{{if gt (len .Args) 1}}
-		{{$arg := ""}}
-		{{range $i, $e := .CmdArgs}}
-			{{if $i}}{{$arg = print $arg " " $e}}{{end}}
-		{{end}}
-		{{if $arg}}{{$arg = slice $arg 1}}{{end}}
-		{{$sb := execAdmin "sb"}}{{$songs := cslice}}
+		{{$arg := ""}}{{range $i, $e := .CmdArgs}}{{if $i}}{{$arg = print $arg " " $e}}{{end}}{{end}}{{if $arg}}{{$arg = slice $arg 1}}{{end}}{{$sb := execAdmin "sb"}}{{$songs := cslice}}
 		{{range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}
-			{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}
-				{{$songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}
-			{{end}}
+			{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}{{$songs = $songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}{{end}}
 		{{end}}
 		{{$a := lower (index .Args 1)}}
 		{{if eq $a "help" "h"}}
@@ -130,17 +108,7 @@
 		{{else if eq $a "queue" "q"}}
 			{{if $yagVC}}{{template "a" (cslice $p 1 $nq (or $arg 1))}}{{else}}{{template "a" (cslice $p 1 $q (or $arg 1))}}{{end}}
 		{{else if eq $a "clear" "cl"}}
-			{{if $yagVC}}
-				{{if $nq}}
-					{{dbSet 20 "queue" (cslice (index $q 0))}}
-					🗑 **Queue cleared!**
-				{{else}}
-					❌ **Nothing to clear!**
-				{{end}}
-			{{else}}
-				{{dbDel 20 "queue"}}
-				🗑 **Queue cleared!**
-			{{end}}
+			{{$nc := "❌ **Nothing cleared!**"}}{{if $arg}}{{$u := 0}}{{with .Message.Mentions}}{{$u = (index . 0).ID}}{{end}}{{with or $u (toInt $arg)}}{{$u = .}}{{$t := $q}}{{if $yagVC}}{{$t = $nq}}{{end}}{{$nnq := cslice}}{{range $t}}{{if ne .req $u}}{{$nnq = $nnq.Append .}}{{end}}{{end}}{{if lt (len $nnq) (len $t)}}{{dbSet 20 "queue" $nnq}}🗑 **Queue cleared for <@{{$u}}>!**{{else}}{{$nc}}{{end}}{{end}}{{else}}{{$qc := "🗑 **Queue cleared!**"}}{{if $yagVC}}{{if $nq}}{{dbSet 20 "queue" (cslice (index $q 0))}}{{$qc}}{{else}}{{$nc}}{{end}}{{else}}{{dbDel 20 "queue"}}{{$qc}}{{end}}{{end}}
 		{{else}}
 			{{if not (reFind `^(n(?:owplaying|p)|(?:f(?:orce)?ski|p(?:layski|(?:lay)?to|ski))p|p(?:laynow|n)|s(?:huffle|t(?:art|op))|r(?:andom|eplay)|begin|end|pt|ps|fs|e|r|b)$` $a)}}
 				{{sendMessage nil $syntax}}
