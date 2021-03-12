@@ -33,8 +33,11 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 ## Instructions for Setting up
 1. Add cc's to custom commands:
+
   `music.yag` Trigger - Regex: `\A(-\s?|<@!?204255221017214977>\s*)m(usic)?(\s|\z)`. Where `-` is your server's prefix.
+
   `music2.yag` Trigger - None. (NOTE: Make sure to specify cc # of this in `music.yag` cc)
+
 2. Add songs withing soundboard with following format: `Artist name - Title goes here [3m43s]`
 3. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
 4. Enjoy the new Music Player!
