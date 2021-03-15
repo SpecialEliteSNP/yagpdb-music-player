@@ -1,4 +1,4 @@
-YAGPDB Music Player
+🎶 YAGPDB Music Player
 ================
 
 ## This custom command is built to be used with YAGPDB.
