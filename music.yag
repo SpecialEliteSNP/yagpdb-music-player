@@ -15,7 +15,7 @@
 {{if .ExecData}}
 	{{$nnq:=cslice}}{{range $i, $e:=$nq}}{{if $i}}{{$nnq =$nnq.Append $e}}{{end}}{{end}}{{$emb:=sdict "title" "⏹ Music stopped" "color" 16734296}}{{$r:=""}}{{if not $usersVC}}{{$r ="🌐 Disconnected due to inactivity"}}{{else if not $yagVC}}{{$r ="❌ I got disconnected 😬"}}{{else if $nq}}{{with index $nq 0}}{{$sil:=execAdmin "sb" (print .artist " - " .title " [" .length "]")}}{{sleep 1}}{{template "a" (cslice . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{else}}{{$r ="🏁 The queue has ended"}}{{end}}{{dbDel 20 "skip"}}{{dbSet 20 "queue" $nq}}{{sleep 1}}{{if $r}}{{$emb.Set "description" (print "Reason:\n" $r)}}{{sendMessage nil (cembed $emb)}}{{end}}
 {{else}}
-	{{$syntax:=cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/Engineer152/yagpdb-music-player).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
+	{{$syntax:=cembed "title" "❌ Syntax:" "description" (print "Basic usage is: *" $p "music <action> [arguments]*\nMore advanced usage can be found [here](https://github.com/SpecialEliteSNP/yagpdb-music-player).\n\nYou can also do: " $p "music help <action>") "color" 16734296}}
 	{{if gt (len .Args) 1}}
 		{{$arg:=""}}{{range $i,$e:=.CmdArgs}}{{if $i}}{{$arg =print $arg " " $e}}{{end}}{{end}}{{if $arg}}{{$arg =slice $arg 1}}{{end}}{{$sb:=execAdmin "sb"}}{{$songs:=cslice}}
 		{{range reFindAllSubmatches `\x60.+?\x60` (slice $sb 29 (sub (len $sb) 36))}}{{with reFindAllSubmatches `\A\x60(.+?)\s-\s(.+?)\s\[(.+?)\]\x60\z` (index . 0)}}{{$songs =$songs.Append (sdict "artist" (index . 0 1) "length" (index . 0 3) "title" (index . 0 2))}}{{end}}{{end}}
