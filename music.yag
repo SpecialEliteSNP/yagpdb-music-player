@@ -37,23 +37,7 @@
 			{{else if eq $a "start" "begin" "b"}}{{if $yagVC}}❌ <@{{$botID}}> **is already playing something!**{{else if $q}}{{template "c" .CCID}}{{with index $q 0}}{{template "b" .}}{{sendMessage nil "🎶 **Music started!**"}}{{template "a" (cslice . $nq)}}{{template "s" (cslice $.CCID .length)}}{{ end }}{{else}}🤷‍♂️ **No songs in the queue**{{end}}
 			{{else if not $yagVC}}❌ **Nothing is playing right now!**
 			{{else if ne $yagVC $userVC}}❌ **You need to be in the same voice channel as <@{{$botID}}>!**
-			{{else if eq $a "skip" "voteskip" "next" "s"}}
-				{{$s:=cslice}}{{with (dbGet 20 "skip").Value}}{{$s =$s.AppendSlice .}}{{end}}
-				{{range .Guild.VoiceStates}}{{if eq .UserID $.User.ID}}{{if or .Deaf .SelfDeaf}}❌ **You're deafened!**{{else}}
-					{{if and (in $s .User.ID) (ne (len $usersVC) 1)}}
-						❌ **You already voted to skip!**
-					{{else}}
-						{{$s =$s.Append .User.ID}}{{$ns:=cslice}}{{range $s}}{{if in $usersVC .}}{{$ns =$ns.Append .}}{{end}}{{end}}
-						{{$m:=mult .75 (len $usersVC)|roundFloor|toInt}}
-						{{if ge (len $ns) $m}}
-							{{template "n"}}{{template "c" .CCID}}{{template "e"}}
-							{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbDel 20 "skip"}}{{dbSet 20 "queue" $nq}}{{else}}{{execCC .CCID nil 0 1}}{{end}}
-						{{else}}
-							{{dbSet 20 "skip" $ns}}
-							**Skipping?** ({{len $ns}}/{{$m}} people)
-						{{end}}
-					{{end}}
-				{{end}}{{end}}{{end}}
+			{{else if eq $a "skip" "voteskip" "next" "s"}}{{$s:=cslice}}{{with (dbGet 20 "skip").Value}}{{$s =$s.AppendSlice .}}{{end}}{{range .Guild.VoiceStates}}{{if eq .UserID $.User.ID}}{{if or .Deaf .SelfDeaf}}❌ **You're deafened!**{{else}}{{if and (in $s .User.ID) (ne (len $usersVC) 1)}}❌ **You already voted to skip!**{{else}}{{$s =$s.Append .User.ID}}{{$ns:=cslice}}{{range $s}}{{if in $usersVC .}}{{$ns =$ns.Append .}}{{end}}{{end}}{{$m:=mult .75 (len $usersVC)|roundFloor|toInt}}{{if ge (len $ns) $m}}{{template "n"}}{{template "c" .CCID}}{{template "e"}}{{if $nq}}{{with index $nq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice . $nnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbDel 20 "skip"}}{{dbSet 20 "queue" $nq}}{{else}}{{execCC .CCID nil 0 1}}{{end}}{{else}}{{dbSet 20 "skip" $ns}}**Skipping?** ({{len $ns}}/{{$m}} people){{end}}{{end}}{{end}}{{end}}{{end}}
 			{{else if eq $a "forceskip" "fs" "fskip"}}{{if or (ge $h 2) (eq (len $usersVC 1))}}{{$t:=1}}{{if $arg}}{{$t =toInt $arg}}{{end}}{{if $t}}{{template "n"}}{{template "c" .CCID}}{{template "e"}}{{$nnnq:=cslice}}{{range $i,$e:=$nnq}}{{if $i}}{{$nnnq =$nnnq.Append $e}}{{end}}{{end}}{{if $nnq}}{{with index $nnq 0}}{{sleep 1}}{{template "b" .}}{{template "a" (cslice . $nnnq)}}{{template "s" (cslice $.CCID .length)}}{{end}}{{dbDel 20 "skip"}}{{dbSet 20 "queue" $nnq}}{{else}}{{execCC .CCID nil 0 1}}{{end}}{{else}}❌ **Please enter a valid number!**{{end}}{{else}}{{$np}}{{end}}
 			{{else if eq $a "replay"}}{{template "c" .CCID}}{{template "e"}}{{with index $q 0}}{{.Set "req" $.User.ID}}{{dbSet 20 "queue" $q}}{{sleep 1}}{{template "b" .}}↪ **Replaying `{{print .artist " - " .title}}`!**{{template "s" (cslice $.CCID .length)}}{{end}}
 			{{else if eq $a "playtop" "pt" "ptop"}}{{template "p" (cslice $p 1 .User.ID $q $nq $songs $arg)}}
