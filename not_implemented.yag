@@ -1,6 +1,5 @@
 {{$commands2 := cslice
 		(cslice "loop" (cslice "repeat") "Toggles looping for the current playing song")
-		(cslice "skip" (cslice "voteskip" "next" "s") "Votes to skip the current playing song" "[number]")
 
 		(cslice "loopqueue" (cslice "qloop" "lq" "queueloop") "Toggles looping for the whole queue")
 		(cslice "move" (cslice "m" "mv") "Moves a certain song to a chosen (or first) position in the queue" "<old positon> [new position]")
