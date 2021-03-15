@@ -16,7 +16,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `random` - Adds a random song to the queue.
 
-`list pg#` - provide list of songs from soundboard (10 per page).
+`list pg#` - Provide list of songs from soundboard (10 per page).
 
 `search`/`find` - Searches from the Soundboard for a song via your query and returns the top 10 results.
 
@@ -32,7 +32,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `stop` - Stops the current playing track.
 
-`queue` - Shows the first page of the queue.
+`queue pg#` - Shows queue list, based on page #.
 
 `remove sg#` - Removes a certain entry from the queue.
 
