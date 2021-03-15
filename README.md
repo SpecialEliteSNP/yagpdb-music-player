@@ -24,8 +24,6 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `skip` - Votes to skip the current playing song.
 
-`forceskip` - Skips the current playing song immediately.
-
 `stop` - Stops the current playing track.
 
 `resume` - Resumes queued music.
@@ -34,11 +32,17 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `queue` - Shows the first page of the queue.
 
-`shuffle` - Shuffles the entire queue.
-
 `remove` - Removes a certain entry from the queue.
 
+##Admin, and DJ only commands:
+
+`playall` - Adds all songs from soundboard to the queue. 
+
+`shuffle` - Shuffles the entire queue.
+
 `clear` - Clears the whole queue. 
+
+`forceskip` - Skips the current playing song immediately.
 
 ## Commands to be added in the future:
 `loopqueue` - Toggles looping for the whole queue
@@ -61,6 +65,8 @@ This will take the soundboard commands and manipulate them to act like a music p
   `music2.yag` Trigger - None. (NOTE: Make sure to specify cc # of this in `music.yag` cc)
 
 2. Add songs withing soundboard with following format: `Artist name - Title goes here [3m43s]`
+
+3. Add a "DJ" role to your server.
 
 4. Disable `-sb` and `-sbreset` within command overrides in YAGPDB control panel.
 
