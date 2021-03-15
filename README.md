@@ -5,12 +5,12 @@
 This will take the soundboard commands and manipulate them to act like a music player with custom music you upload to the soundboard.
 
 ## The main leading command:
-`-music <command>` All commands need to be preceeded by this leading command. Where `-` is your server's prefix.
+`-music <action> <alias>` All commands need to be preceeded by this leading command. Where `-` is your server's prefix.
 
 ## Current available command actions are as follows:
-`play` - Plays a song with the given name.
+`play songname` - Plays a song with the given name.
 
-`playtop` - Adds a song with the given name **ON TOP OF THE QUEUE**.
+`playtop songname` - Adds a song with the given name **ON TOP OF THE QUEUE**.
 
 `playskip` - Skips the current song and plays the song you requested.
 
@@ -18,7 +18,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `list pg#` - Provide list of songs from soundboard (10 per page).
 
-`search`/`find` - Searches from the Soundboard for a song via your query and returns the top 10 results.
+`find songname` - Searches from the Soundboard for a song via your query and returns the top 10 results.
 
 `nowplaying` - Shows what song the bot is currently playing.
 
@@ -34,9 +34,9 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `queue pg#` - Shows queue list, based on page #.
 
-`remove sg#` - Removes a certain entry from the queue.
+`remove sg#` - Removes a certain entry requested by you from the queue.
 
-`help` - Provides help based on specific command.
+`help <action>` - Provides help based on specific command.
 
 ## Admin, and DJ only commands:
 
@@ -47,6 +47,8 @@ This will take the soundboard commands and manipulate them to act like a music p
 `clear` - Clears the whole queue. 
 
 `forceskip` - Skips the current playing song immediately.
+
+`remove sg#` - Removes a song entry from the queue (any user requested).
 
 ## Possible commands to be added in the future:
 `loopqueue` - Toggles looping for the whole queue
