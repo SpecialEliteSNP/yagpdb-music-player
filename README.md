@@ -34,7 +34,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `remove` - Removes a certain entry from the queue.
 
-##Admin, and DJ only commands:
+## Admin, and DJ only commands:
 
 `playall` - Adds all songs from soundboard to the queue. 
 
