@@ -14,25 +14,29 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `playskip` - Skips the current song and plays the song you requested.
 
-`search` - Searches from the Soundboard for a song via your query and returns the top 10 results.
+`random` - Adds a random song to the queue.
+
+`list pg#` - provide list of songs from soundboard (10 per page).
+
+`search`/`find` - Searches from the Soundboard for a song via your query and returns the top 10 results.
 
 `nowplaying` - Shows what song the bot is currently playing.
 
-`grab` - Saves the current playing song to your Direct Messages.
+`grab`/`save`/`yoink` - Saves the current playing song to your Direct Messages.
 
 `replay` - Resets the progress of the current song.
 
 `skip` - Votes to skip the current playing song.
 
+`start` - Starts the Bot playing the queue.
+
 `stop` - Stops the current playing track.
-
-`resume` - Resumes queued music.
-
-`disconnect` - Disconnects the bot from the voice channel it is in.
 
 `queue` - Shows the first page of the queue.
 
-`remove` - Removes a certain entry from the queue.
+`remove sg#` - Removes a certain entry from the queue.
+
+`help` - Provides help based on specific command.
 
 ## Admin, and DJ only commands:
 
@@ -44,7 +48,7 @@ This will take the soundboard commands and manipulate them to act like a music p
 
 `forceskip` - Skips the current playing song immediately.
 
-## Commands to be added in the future:
+## Possible commands to be added in the future:
 `loopqueue` - Toggles looping for the whole queue
 
 `move` - Moves a certain song to a chosen (or first) position in the queue
@@ -60,9 +64,9 @@ This will take the soundboard commands and manipulate them to act like a music p
 ## Instructions for Setting up
 1. Add cc's to custom commands:
 
-  `music.yag` Trigger - Regex: `\A(-\s?|<@!?204255221017214977>\s*)m(usic)?(\s|\z)`. Where `-` is your server's prefix.
+    `music.yag` Trigger - Regex: `\A(-\s?|<@!?204255221017214977>\s*)m(usic)?(\s|\z)`. Where `-` is your server's prefix.
 
-  `music2.yag` Trigger - None. (NOTE: Make sure to specify cc # of this in `music.yag` cc)
+    `music2.yag` Trigger - None. (NOTE: Make sure to specify cc # of this in `music.yag` cc)
 
 2. Add songs withing soundboard with following format: `Artist name - Title goes here [3m43s]`
 
